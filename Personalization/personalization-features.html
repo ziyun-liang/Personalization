@@ -1121,6 +1121,17 @@ html, body {
   flex-direction: column;
   gap: 14px;
   box-sizing: border-box;
+  position: relative;
+}
+.inline-chat-you-updates-card--unread::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #d0021b;
 }
 .inline-chat-you-updates-card:hover {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
@@ -1320,6 +1331,9 @@ html, body {
   font-weight: 600;
   color: var(--tpl-accent, #326891);
   white-space: nowrap;
+}
+.nyt-nav-back-btn[hidden] {
+  display: none;
 }
 .nyt-nav-back-btn svg {
   flex-shrink: 0;
@@ -3806,12 +3820,10 @@ html, body {
   padding: 0 24px 16px;
 }
 .reading-mode-qb-card-divider {
-  height: 1px;
-  background: #e0e0e0;
-  margin: 12px 0;
+  display: none;
 }
 .reading-mode-qb-card-ai-label {
-  margin: 0 0 10px;
+  margin: 16px 0 10px;
   font-family: 'NYTFranklin', sans-serif;
   font-weight: 500;
   font-size: 12px;
@@ -3900,41 +3912,107 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 80px 20px;
+  padding: 60px 20px 40px;
   text-align: center;
+  flex: 1;
+  min-height: 0;
 }
 .reading-mode-qb-done-icon {
-  width: 56px;
-  height: 56px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: #f0f7f0;
+  background: #121212;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
+  transform: scale(1);
+  transform-origin: center center;
+}
+.reading-mode-qb-done-icon--animate {
+  animation: qb-done-icon-pop 0.72s cubic-bezier(0.34, 1.45, 0.64, 1) forwards;
+}
+.reading-mode-qb-done-icon--animate .reading-mode-qb-done-check-path {
+  animation: qb-done-check-draw 0.52s cubic-bezier(0.33, 1, 0.68, 1) 0.1s forwards;
+}
+@keyframes qb-done-icon-pop {
+  0%   { transform: scale(0.78); box-shadow: 0 0 0 0 rgba(18,18,18,0.35); }
+  42%  { transform: scale(1.12); box-shadow: 0 0 0 12px rgba(18,18,18,0); }
+  72%  { transform: scale(0.97); }
+  100% { transform: scale(1); box-shadow: none; }
+}
+@keyframes qb-done-check-draw {
+  0%   { stroke-dashoffset: 20; }
+  100% { stroke-dashoffset: 0; }
 }
 .reading-mode-qb-done-icon svg {
-  width: 28px;
-  height: 28px;
-  stroke: #2e7d32;
-  fill: none;
-  stroke-width: 2.2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+.reading-mode-qb-done-check-path {
+  stroke-dasharray: 20;
+  stroke-dashoffset: 20;
 }
 .reading-mode-qb-done-title {
-  margin: 0 0 6px;
+  margin: 0 0 20px;
   font-family: 'NYTCheltenham', Georgia, serif;
   font-weight: 700;
-  font-size: 22px;
+  font-size: 20px;
   color: #121212;
 }
-.reading-mode-qb-done-subtitle {
-  margin: 0;
+.reading-mode-qb-done-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 28px;
+  border: 1px solid #121212;
+  border-radius: 4px;
+  background: #121212;
+  color: #fff;
+  font-family: 'NYTFranklin', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.reading-mode-qb-done-cta:hover {
+  background: #333;
+}
+.reading-mode-qb-done-cta:active {
+  background: #000;
+}
+.reading-mode-qb-done-divider {
+  width: 40px;
+  height: 1px;
+  background: #e0e0e0;
+  margin: 28px 0;
+}
+.reading-mode-qb-done-prompt {
+  margin: 0 0 8px;
   font-family: 'NYTFranklin', sans-serif;
   font-weight: 400;
   font-size: 14px;
   color: #666;
+}
+.reading-mode-qb-done-arrow {
+  font-size: 18px;
+  color: #666;
+  animation: qb-done-bounce 1.5s ease infinite;
+  cursor: pointer;
+}
+@keyframes qb-done-bounce {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(6px); }
+}
+/* ── Batch reload animation ── */
+@keyframes qb-batch-fade-in {
+  0%   { opacity: 0; transform: scale(0.92) translateY(20px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.reading-mode-qb-wrapper--entering {
+  animation: qb-batch-fade-in 0.4s cubic-bezier(0.34, 1.45, 0.64, 1) forwards;
 }
 
 /* ══════════════════════════════════════════════════
@@ -4050,8 +4128,8 @@ html, body {
 .reading-mode-dr-gradient-bottom {
   position: absolute;
   bottom: 0; left: 0; right: 0;
-  height: 290px;
-  background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
+  height: 480px;
+  background: linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.5) 35%, rgba(0,0,0,0.2) 70%, transparent 100%);
   pointer-events: none;
   z-index: 1;
 }
@@ -4152,6 +4230,20 @@ html, body {
      Today vs For You Prototype CSS
      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
 <style>
+/* ── Full-bleed frame for For You immersive ── */
+#device-frame.fy-fullbleed #content-scroll {
+  padding: 0;
+  transition: padding 0.25s ease;
+}
+#device-frame.fy-fullbleed .phone-status-bar {
+  background: transparent !important;
+  color: #fff !important;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+#device-frame.fy-fullbleed .phone-home-indicator::after {
+  background: rgba(255,255,255,0.6);
+}
+
 /* ── Layout shell ── */
 #content-scroll.today-foryou-fill {
   overflow: hidden;
@@ -4230,6 +4322,17 @@ html, body {
   padding-top: 2px;
 }
 
+/* ── Collapsible chrome wrapper ── */
+.today-foryou-chrome-top {
+  flex-shrink: 0;
+  overflow: hidden;
+  max-height: 110px;
+  transition: max-height 0.25s ease;
+}
+.today-foryou-view.chrome-collapsed .today-foryou-chrome-top {
+  max-height: 0;
+}
+
 /* ── Pill switcher ── */
 .today-foryou-pill-row {
   display: flex;
@@ -4239,6 +4342,13 @@ html, body {
   padding: 24px 20px 4px;
   background: #fff;
   flex-shrink: 0;
+  transition: transform 0.25s ease, padding 0.25s ease;
+  will-change: transform;
+  z-index: 9;
+}
+.today-foryou-view.chrome-collapsed .today-foryou-pill-row {
+  padding-top: 8px;
+  padding-bottom: 8px;
 }
 .today-foryou-pill {
   height: 35px;
@@ -4268,6 +4378,61 @@ html, body {
 .today-foryou-pill:focus-visible {
   outline: 2px solid #326891;
   outline-offset: 2px;
+}
+
+/* ── For You immersive mode ── */
+.today-foryou-view.fy-immersive .today-foryou-pill-row {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 12;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.25) 60%, transparent 100%);
+  padding-top: 54px;
+  padding-bottom: 16px;
+  pointer-events: none;
+}
+.today-foryou-view.fy-immersive .today-foryou-pill {
+  pointer-events: auto;
+  border-color: rgba(255,255,255,0.6);
+  background: transparent;
+  color: rgba(255,255,255,0.9);
+}
+.today-foryou-view.fy-immersive .today-foryou-pill[aria-pressed="true"] {
+  background: rgba(255,255,255,0.95);
+  border-color: rgba(255,255,255,0.95);
+  color: #121212;
+}
+.today-foryou-view.fy-immersive .today-foryou-pill:hover {
+  background: rgba(255,255,255,0.15);
+}
+.today-foryou-view.fy-immersive .today-foryou-fy-counter {
+  top: 58px;
+}
+.today-foryou-fy-close {
+  position: absolute;
+  top: 58px;
+  right: 20px;
+  z-index: 14;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.7);
+  background: rgba(0,0,0,0.3);
+  color: #fff;
+  font-size: 16px;
+  line-height: 28px;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.today-foryou-view.fy-immersive .today-foryou-card-overlay {
+  padding-bottom: 58px;
+}
+.today-foryou-view.fy-immersive .today-foryou-video-inner {
+  padding-bottom: 82px;
 }
 
 /* ── For You overlay ── */
@@ -4629,7 +4794,7 @@ html, body {
   position: absolute;
   top: 12px;
   left: 20px;
-  z-index: 4;
+  z-index: 14;
   padding: 4px 12px;
   border-radius: 66px;
   border: 1px solid rgba(255,255,255,0.7);
@@ -4796,6 +4961,60 @@ html, body {
   font-style: italic;
 }
 
+/* ── Image carousel card ── */
+.today-foryou-fy-page--images {
+  background: #000;
+}
+.today-foryou-images-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-bottom: 48px;
+}
+.today-foryou-images-carousel {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 0 20px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  scroll-padding: 0 20px;
+  scroll-behavior: smooth;
+}
+.today-foryou-images-carousel.dragging {
+  scroll-snap-type: none;
+  scroll-behavior: auto;
+}
+.today-foryou-images-carousel::-webkit-scrollbar { display: none; }
+.today-foryou-images-card {
+  flex-shrink: 0;
+  width: 55%;
+  scroll-snap-align: start;
+}
+.today-foryou-images-card img {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  display: block;
+  border-radius: 10px;
+  background: #1a1a1a;
+}
+.today-foryou-images-why {
+  padding: 0 20px;
+  margin-bottom: 10px;
+  font-family: 'NYTFranklin', sans-serif;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 1.3;
+  color: rgba(255,255,255,0.75);
+  font-style: italic;
+}
+
 /* ── Bottom nav ── */
 .today-foryou-bottom-nav {
   height: 52px;
@@ -4804,7 +5023,15 @@ html, body {
   display: flex;
   align-items: flex-start;
   padding-top: 4px;
-  flex-shrink: 0;
+  transition: height 0.25s ease, opacity 0.2s ease, padding 0.25s ease;
+  overflow: hidden;
+}
+.today-foryou-view.chrome-collapsed .today-foryou-bottom-nav {
+  height: 0;
+  padding: 0;
+  border-top: none;
+  opacity: 0;
+  pointer-events: none;
 }
 .today-foryou-tab-item {
   flex: 1;
@@ -5090,18 +5317,20 @@ html, body {
 }
 
 .recap-email-shell {
-  border-radius: 16px;
-  border: 1px solid #dfdfdf;
+  border-radius: 0;
+  border: none;
   background: #fff;
   overflow: hidden;
 }
 
 .recap-email-header {
-  padding: 16px 16px 12px;
-  border-bottom: none;
+  padding: 20px 16px 16px;
+  border-bottom: 2px solid #121212;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  text-align: center;
 }
 .recap-email-logo {
   width: 24px;
@@ -5116,90 +5345,106 @@ html, body {
   font-size: 15px;
   color: #111;
 }
+.recap-email-date {
+  margin: 0;
+  font-family: 'NYTFranklin', -apple-system, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  color: #666;
+  letter-spacing: 0.03em;
+}
 .recap-email-title {
   margin: 0;
   font-family: 'NYTCheltenham', Georgia, serif;
   font-weight: 700;
-  font-size: 27px;
-  line-height: 1.02;
-  color: #111;
+  font-size: 24px;
+  line-height: 1.1;
+  color: #121212;
 }
 
 .recap-email-body {
-  padding: 14px 16px 16px;
+  padding: 0 16px 20px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0;
 }
 
 .recap-email-module {
-  border: 1px solid #e8e8e8;
-  border-radius: 12px;
-  padding: 14px;
-  background: #fff;
+  border: none;
+  border-bottom: 1px solid #e2e2e2;
+  border-radius: 0;
+  padding: 18px 0;
+  background: transparent;
   overflow: hidden;
+}
+.recap-email-module:last-child {
+  border-bottom: none;
 }
 .recap-email-module-head {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 0;
+  margin-bottom: 8px;
 }
 .recap-email-module-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  display: none;
 }
 .recap-email-module-title {
   margin: 0;
-  font-family: 'NYTFranklin', sans-serif;
+  font-family: 'NYTFranklin', -apple-system, sans-serif;
   font-weight: 700;
-  font-size: 13px;
-  color: #111;
-  letter-spacing: 0.01em;
+  font-size: 10px;
+  color: #666;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 .recap-email-thumb {
   width: 100%;
-  height: 110px;
-  border-radius: 8px;
+  height: 180px;
+  border-radius: 0;
   object-fit: cover;
   display: block;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 .recap-email-text {
   margin: 0;
   font-family: 'NYTCheltenham', Georgia, serif;
-  font-size: 15px;
-  line-height: 1.3;
-  color: #222;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #121212;
+}
+.recap-email-summary {
+  margin: 6px 0 0;
+  font-family: 'NYTImperial', Georgia, serif;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #333;
 }
 .recap-email-meta {
-  margin: 6px 0 0;
-  font-family: 'NYTFranklin', sans-serif;
+  margin: 8px 0 0;
+  font-family: 'NYTFranklin', -apple-system, sans-serif;
   font-size: 11px;
-  color: #666;
+  color: #999;
+  letter-spacing: 0.01em;
 }
 .recap-email-cta {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  margin-top: 12px;
-  padding: 10px 18px;
-  background: #121212;
-  color: #fff;
-  border-radius: 8px;
+  gap: 4px;
+  margin-top: 10px;
+  padding: 0;
+  background: none;
+  color: #333;
+  border-radius: 0;
   border: none;
-  font-family: 'NYTFranklin', sans-serif;
-  font-size: 13px;
+  font-family: 'NYTFranklin', -apple-system, sans-serif;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   letter-spacing: 0.01em;
 }
-.recap-email-cta:hover { background: #333; }
+.recap-email-cta:hover { background: none; color: #121212; }
 .recap-email-cta svg { flex-shrink: 0; }
 
 .recap-progress-row {
@@ -5233,9 +5478,9 @@ html, body {
 .recap-react-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  border: 1px solid #dfdfdf;
-  background: #f8f8f8;
+  gap: 5px;
+  border: 1px solid #e2e2e2;
+  background: #fff;
   border-radius: 8px;
   padding: 9px 14px;
   font-family: 'NYTFranklin', sans-serif;
@@ -6525,6 +6770,20 @@ html, body {
     if (pathBHomeEl) {
       pathBHomeEl.classList.toggle('inline-chat-journey-screen--active', nextState === 'pathB_home');
       if (nextState === 'pathB_home') {
+        // Reset the updates card for a fresh Path B walkthrough
+        pathBCardDismissed = false;
+        if (pathBYouEl) {
+          var p1ResetCard = pathBYouEl.querySelector('[data-pathb-updates-card]');
+          if (p1ResetCard) {
+            p1ResetCard.classList.remove('inline-chat-you-updates-card--collapsing');
+            p1ResetCard.classList.add('inline-chat-you-updates-card--unread');
+            p1ResetCard.style.transition = '';
+            p1ResetCard.style.maxHeight = '';
+            p1ResetCard.style.opacity = '';
+            p1ResetCard.style.padding = '';
+            p1ResetCard.style.marginBottom = '';
+          }
+        }
         setTimeout(function () {
           var ribbon = pathBHomeEl.querySelector('.inline-chat-nyt-ribbon');
           var selected = pathBHomeEl.querySelector('.inline-chat-nyt-ribbon-item--selected');
@@ -6823,7 +7082,7 @@ html, body {
             '</button>' +
           '</header>' +
           '<div class="inline-chat-you-modules">' +
-            '<button type="button" class="inline-chat-you-updates-card" data-pathb-updates-card>' +
+            '<button type="button" class="inline-chat-you-updates-card inline-chat-you-updates-card--unread" data-pathb-updates-card>' +
               '<div class="inline-chat-you-updates-card-top">' +
                 '<div class="inline-chat-you-updates-card-text">' +
                   '<p class="inline-chat-you-updates-title">Readers replied to your comment</p>' +
@@ -7517,6 +7776,10 @@ commentsHeader.innerHTML =
     onPathBUpdatesTap = function () {
       pathBCardDismissed = true;
       pathBEntryActive = true;
+      if (pathBYouEl) {
+        var updCard = pathBYouEl.querySelector('[data-pathb-updates-card]');
+        if (updCard) updCard.classList.remove('inline-chat-you-updates-card--unread');
+      }
       returnToArticle('comments', true);
     };
 
@@ -7773,6 +8036,8 @@ commentsHeader.innerHTML =
   var cdPathBHomeScreenEl = null;
   var cdPathBYouScreenEl = null;
   var cdJourneyState = 'none';
+  var cdEnteredFromPathB = false;
+  var cdPathBCardDismissed = false;
 
   // ━━━ Helpers ━━━
   function on(el, evt, fn) {
@@ -7997,6 +8262,42 @@ commentsHeader.innerHTML =
       var pathBCard = stepPanelEl.querySelector('[data-path-entry="pathB"]');
       if (pathACard) pathACard.classList.toggle('inline-chat-path-entry--active', nextState === 'pathA_lock');
       if (pathBCard) pathBCard.classList.toggle('inline-chat-path-entry--active', nextState === 'pathB_home' || nextState === 'pathB_you');
+    }
+
+    // ── Reset the updates card when re-entering Path B fresh ──
+    if (nextState === 'pathB_home' && cdPathBYouScreenEl) {
+      cdPathBCardDismissed = false;
+      var resetCard = cdPathBYouScreenEl.querySelector('[data-cd-updates-card]');
+      if (resetCard) {
+        resetCard.classList.remove('inline-chat-you-updates-card--collapsing');
+        resetCard.classList.add('inline-chat-you-updates-card--unread');
+        resetCard.style.transition = '';
+        resetCard.style.maxHeight = '';
+        resetCard.style.opacity = '';
+        resetCard.style.padding = '';
+        resetCard.style.marginBottom = '';
+      }
+    }
+
+    // ── You tab: collapse the updates card on return if already acted on ──
+    if (nextState === 'pathB_you' && cdPathBCardDismissed && cdPathBYouScreenEl) {
+      var card = cdPathBYouScreenEl.querySelector('[data-cd-updates-card]');
+      if (card && !card.classList.contains('inline-chat-you-updates-card--collapsing')) {
+        setTimeout(function () {
+          card.classList.add('inline-chat-you-updates-card--collapsing');
+          var fullH = card.scrollHeight;
+          card.style.maxHeight = fullH + 'px';
+          card.style.opacity = '1';
+          card.style.marginBottom = card.style.marginBottom || '16px';
+          // Force reflow so the transition starts from the explicit values
+          card.offsetHeight; // eslint-disable-line no-unused-expressions
+          card.style.transition = 'max-height 0.4s ease, opacity 0.25s ease, margin-bottom 0.4s ease, padding 0.4s ease';
+          card.style.maxHeight = '0';
+          card.style.opacity = '0';
+          card.style.padding = '0';
+          card.style.marginBottom = '0';
+        }, 350);
+      }
     }
   }
 
@@ -8247,7 +8548,15 @@ commentsHeader.innerHTML =
     topbar.appendChild(backBtn);
     container.appendChild(topbar);
     on(backBtn, 'click', function () {
-      transitionTo(STATE.YOU);
+      if (cdEnteredFromPathB) {
+        cdEnteredFromPathB = false;
+        currentState = STATE.ARTICLE;
+        setActiveView('article');
+        setJourneyStateCD('pathB_you');
+        updateStepPanel(2);
+      } else {
+        transitionTo(STATE.YOU);
+      }
     });
 
     // Scrollable thread content (will be populated dynamically)
@@ -8949,9 +9258,17 @@ commentsHeader.innerHTML =
             '</button>' +
           '</header>' +
           '<div class="inline-chat-you-modules">' +
-            '<button type="button" class="inline-chat-you-updates-card" data-cd-updates-card>' +
-              '<p class="inline-chat-you-updates-title">' + FRIENDS[0].name + ' replied to your clip</p>' +
-              '<p class="inline-chat-you-updates-body">&ldquo;' + FRIEND_REPLIES[FRIENDS[0].name].substring(0, 80) + '...&rdquo; Tap to view the conversation.</p>' +
+            '<button type="button" class="inline-chat-you-updates-card inline-chat-you-updates-card--unread" data-cd-updates-card>' +
+              '<div class="inline-chat-you-updates-card-top">' +
+                '<div class="inline-chat-you-updates-card-text">' +
+                  '<p class="inline-chat-you-updates-title">' + FRIENDS[0].name + ' replied to your clip</p>' +
+                  '<p class="inline-chat-you-updates-body">&ldquo;' + FRIEND_REPLIES[FRIENDS[0].name].substring(0, 80) + '...&rdquo;</p>' +
+                '</div>' +
+                '<div class="inline-chat-you-updates-avatars" aria-hidden="true">' +
+                  '<div class="inline-chat-you-updates-avatar" style="background:' + FRIENDS[0].color + ';color:#fff">' + FRIENDS[0].initials + '</div>' +
+                '</div>' +
+              '</div>' +
+              '<div class="inline-chat-you-updates-cta" aria-hidden="true">Tap to view the conversation</div>' +
             '</button>' +
             '<section>' +
               '<div class="inline-chat-you-module-header">' +
@@ -9008,6 +9325,9 @@ commentsHeader.innerHTML =
     var cdUpdatesBtn = pathBYouScreen.querySelector('[data-cd-updates-card]');
     if (cdUpdatesBtn) on(cdUpdatesBtn, 'click', function () {
       ensureMockData();
+      cdEnteredFromPathB = true;
+      cdPathBCardDismissed = true;
+      cdUpdatesBtn.classList.remove('inline-chat-you-updates-card--unread');
       setJourneyStateCD('none');
       transitionTo(STATE.THREAD);
     });
@@ -9092,6 +9412,8 @@ commentsHeader.innerHTML =
     cdPathBHomeScreenEl = null;
     cdPathBYouScreenEl = null;
     cdJourneyState = 'none';
+    cdEnteredFromPathB = false;
+    cdPathBCardDismissed = false;
     var deviceFrame = document.getElementById('device-frame');
     if (deviceFrame) { deviceFrame.classList.remove('cd-path-a-lock'); deviceFrame.classList.remove('cd-journey-active'); }
   }
@@ -9125,6 +9447,8 @@ commentsHeader.innerHTML =
   var qbCards = [];
   var qbCounterEl = null;
   var allCardsArr = [];
+  var qbBatch = 0;
+  var qbCurrentStories = null;
   var drIndex = 0;
   var drPages = [];
   var drCounterEl = null;
@@ -9139,18 +9463,25 @@ commentsHeader.innerHTML =
   /* ── Story data ── */
   var STORIES = {
     quickBites: [
-      { kicker: 'World', title: 'Cease-Fire Talks Resume in Cairo', summary: 'Negotiators returned to the table after overnight shuttle diplomacy produced a preliminary framework for humanitarian pauses.', readTime: '3 min read', image: '../Article-Overview/Assets/Images/1.webp', commentCount: '1.7K' },
-      { kicker: 'Business', title: 'Stocks Edge Higher in Morning Trade', summary: 'Tech and energy shares led gains as Treasury yields eased and investors weighed fresh inflation data.', readTime: '4 min read', image: '../Article-Overview/Assets/Images/3.webp', commentCount: '892' },
-      { kicker: 'Science', title: 'New Battery Breakthrough Shows Promise', summary: 'A laboratory prototype using a solid-state electrolyte could cut charging times significantly in cold weather.', readTime: '4 min read', image: '../Article-Overview/Assets/Images/5.webp', commentCount: '2.1K' },
-      { kicker: 'Politics', title: 'Senate Advances Bipartisan Infrastructure Bill', summary: 'The measure cleared a procedural vote, signaling enough support to move toward a final floor vote this week.', readTime: '3 min read', image: '../Article-Overview/Assets/Images/2.webp', commentCount: '435' },
-      { kicker: 'Health', title: 'F.D.A. Approves Updated Vaccine Boosters', summary: 'Regulators authorized reformulated shots designed to target the most recent circulating variants ahead of fall.', readTime: '3 min read', image: '../Article-Overview/Assets/Images/4.webp', commentCount: '1.3K' }
+      { kicker: 'Education', title: 'Judge Intends to Block Trump Effort to Stop Harvard From Enrolling Foreign Students', summary: 'The decision was a victory for Harvard in its ongoing confrontation with the White House, which has sought to undermine the university\u2019s finances.', readTime: '5 min read', image: '../Article-Overview/Assets/Today-tab/Images/1.png', commentCount: '2.4K' },
+      { kicker: 'Education', title: 'Harvard Says Many of Its Foreign Students Are Seeking to Transfer', summary: 'The university disclosed that a significant number of international students have begun exploring options at other institutions.', readTime: '2 min read', image: '../Article-Overview/Assets/Today-tab/Images/2.png', commentCount: '1.1K' },
+      { kicker: 'World', title: 'Frustration Grows in Israel Over Fate of Gaza Hostages', summary: 'Families and supporters have stepped up pressure on the Israeli government as negotiations drag on and public anxiety deepens over those still held in Gaza.', readTime: '5 min read', image: '../Article-Overview/Assets/Today-tab/Images/3.png', commentCount: '1.7K' },
+      { kicker: 'Politics', title: 'White House Rushes to Preserve Tariff Power', summary: 'The Trump administration has asked that it be allowed to proceed with tariffs that a federal court declared were illegal.', readTime: '5 min read', image: '../Article-Overview/Assets/Today-tab/Images/4.png', commentCount: '892' },
+      { kicker: 'Business', title: 'Wall Street Hesitates to Cheer Court Ruling Blocking Tariffs', summary: 'Investors remained cautious despite a judicial decision that could limit the administration\u2019s ability to impose sweeping trade penalties.', readTime: '5 min read', image: '../Article-Overview/Assets/Today-tab/Images/5.png', commentCount: '435' }
+    ],
+    quickBitesBatch2: [
+      { kicker: 'World', title: 'Israel Bombards Gaza Amid Chaos Surrounding Aid Handouts', summary: 'Israeli attacks on Gaza have killed more than 60 people over the past day, according to local health officials.', readTime: '3 min read', image: '../Article-Overview/Assets/Today-tab/Images/6.png', commentCount: '1.4K' },
+      { kicker: 'World', title: 'Britain Weighs Sanctions on Israeli Cabinet Ministers as Gaza Crisis Worsens', summary: 'The British government is considering targeted measures against senior Israeli officials over conduct in the conflict.', readTime: '5 min read', image: '../Article-Overview/Assets/Today-tab/Images/7.png', commentCount: '780' },
+      { kicker: 'Culture', title: 'A Young Rockefeller Vanished in 1961. The Met\u2019s New Wing Celebrates His Memory.', summary: 'Mary Rockefeller Morgan was determined to honor her family of collectors, and Indigenous art.', readTime: '9 min read', image: '../Article-Overview/Assets/Today-tab/Images/11.png', commentCount: '562' },
+      { kicker: 'New York', title: 'A Community-Led Plan to Fill a Dilapidated Armory in the Bronx', summary: 'Nearly 30 years later, a community group could revitalize a fortress in New York\u2019s poorest borough.', readTime: '5 min read', image: '../Article-Overview/Assets/Today-tab/Images/10.png', commentCount: '347' },
+      { kicker: 'Business', title: 'The Rise of the Japanese Toilet', summary: 'Having conquered its home market, Toto is selling more bidets in the U.S. Its president says not even tariffs will halt its advance.', readTime: '5 min read', image: '../Article-Overview/Assets/Today-tab/Images/12.png', commentCount: '1.9K' }
     ],
     deepReads: [
-      { kicker: 'OPINION', title: 'The Voters Who Could Define the Next Election', reason: 'Because you follow Opinion', image: '../Article-Overview/Assets/Images/1.webp' },
-      { kicker: 'INVESTIGATIONS', title: 'Inside the Hidden Pipeline of Medical Billing Errors', reason: 'Because you read Health', image: '../Article-Overview/Assets/Images/2.webp' },
-      { kicker: 'CLIMATE', title: 'How Coastal Cities Are Rewriting Their Maps', reason: 'Because you follow Climate', image: '../Article-Overview/Assets/Images/3.webp' },
-      { kicker: 'TECHNOLOGY', title: 'The Data Center Boom Reshaping Small-Town Power', reason: 'Because you read Tech', image: '../Article-Overview/Assets/Images/4.webp' },
-      { kicker: 'CULTURE', title: 'The Quiet Revolution Inside Public Libraries', reason: 'Because you follow Culture', image: '../Article-Overview/Assets/Images/5.webp' }
+      { kicker: 'THE GREAT READ', title: 'He Made One Wrong Turn. ICE Detained Him for 3 Weeks.', reason: 'Because you follow Immigration', image: '../Article-Overview/Assets/Images/deep-1.jpg' },
+      { kicker: 'THE GREAT READ', title: 'A Disillusioned Musk, Distanced From Trump, Says He\u2019s Exiting Washington', reason: 'Because you follow Politics', image: '../Article-Overview/Assets/Images/deep-2.jpg' },
+      { kicker: 'THE GREAT READ', title: 'Senators Seek Answers From Pentagon on Troops\u2019 Blast Exposure', reason: 'Because you read National Security', image: '../Article-Overview/Assets/Images/deep-3.jpg' },
+      { kicker: 'THE GREAT READ', title: 'As Climate Shocks Worsen, U.S. Disaster Agency Tries a New Approach to Aid', reason: 'Because you follow Climate', image: '../Article-Overview/Assets/Images/deep-4.jpg' },
+      { kicker: 'THE GREAT READ', title: 'Billionaires Wanted to Save the News Industry. They\u2019re Losing a Fortune.', reason: 'Because you read Media', image: '../Article-Overview/Assets/Images/deep-5.jpg' }
     ],
     rareGem: [
       { title: 'The Mapmaker Who Charted New York\u2019s Forgotten Waterways', summary: 'A retired surveyor has spent two decades documenting buried streams and lost shorelines beneath city streets.', reason: 'Because you read History', readTime: '8 min read', image: '../Article-Overview/Assets/Images/2.webp', layout: 'large' },
@@ -9338,6 +9669,7 @@ commentsHeader.innerHTML =
 
   function exitFocusedMode() {
     activeMode = null;
+    if (scrollAreaEl) scrollAreaEl.style.overflowY = '';
     if (viewEl) {
       viewEl.classList.remove('reading-mode-view--focused');
       viewEl.classList.remove('reading-mode-view--deep');
@@ -9400,10 +9732,14 @@ commentsHeader.innerHTML =
   function renderFocusedContent() {
     if (!contentAreaEl) return;
     contentAreaEl.innerHTML = '';
+    /* Restore scroll in case the done screen locked it */
+    if (scrollAreaEl) scrollAreaEl.style.overflowY = '';
     qbIndex = 0;
     qbCards = [];
     qbCounterEl = null;
     allCardsArr = [];
+    qbBatch = 0;
+    qbCurrentStories = null;
     drIndex = 0;
     drPages = [];
     drCounterEl = null;
@@ -9512,8 +9848,9 @@ commentsHeader.innerHTML =
   }
 
   /* ── Quick Bites renderer (rich AI summary cards + drag swipe) ── */
-  function renderQuickBites(container) {
-    var stories = STORIES.quickBites;
+  function renderQuickBites(container, storiesOverride) {
+    var stories = storiesOverride || STORIES.quickBites;
+    qbCurrentStories = stories;
     qbIndex = 0;
     qbCards = [];
     allCardsArr = [];
@@ -9722,7 +10059,7 @@ commentsHeader.innerHTML =
         qbIndex++;
         updateQuickBitesCounter();
 
-        if (qbIndex >= STORIES.quickBites.length) {
+        if (qbIndex >= qbCurrentStories.length) {
           setTimeout(function () { showQuickBitesDone(); }, 300);
         } else {
           initCards();
@@ -9779,7 +10116,7 @@ commentsHeader.innerHTML =
         qbIndex++;
         updateQuickBitesCounter();
 
-        if (qbIndex >= STORIES.quickBites.length) {
+        if (qbIndex >= qbCurrentStories.length) {
           setTimeout(function () { showQuickBitesDone(); }, 300);
         } else {
           initCards();
@@ -9797,26 +10134,214 @@ commentsHeader.innerHTML =
   /* ── QB counter ── */
   function updateQuickBitesCounter() {
     if (qbCounterEl) {
-      var total = STORIES.quickBites.length;
+      var total = qbCurrentStories.length;
       if (qbIndex < total) {
         qbCounterEl.textContent = (qbIndex + 1) + '/' + total;
       }
     }
   }
 
+  /* ── Slide-up transition from QB done → Deep Reads ── */
+  function slideToDeepReads(doneEl) {
+    if (!scrollAreaEl || !contentAreaEl) { switchFocusedMode('deepReads'); return; }
+
+    var DURATION = 480; // ms
+    var EASING = 'cubic-bezier(0.4, 0, 0.15, 1)';
+
+    /* 1. Create an overlay that will hold the Deep Reads content.
+       Position it just below the visible area so it slides up. */
+    var overlay = document.createElement('div');
+    overlay.style.cssText =
+      'position:absolute;top:0;left:0;right:0;bottom:0;' +
+      'background:#000;overflow:hidden;' +
+      'transform:translateY(100%);' +
+      'transition:transform ' + DURATION + 'ms ' + EASING + ';' +
+      'z-index:2;';
+
+    /* 2. Pre-render Deep Reads into the overlay */
+    var drWrap = document.createElement('div');
+    drWrap.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;';
+    renderDeepReads(drWrap);
+    overlay.appendChild(drWrap);
+
+    /* 3. Prepare the done screen for sliding up */
+    contentAreaEl.style.transition = 'transform ' + DURATION + 'ms ' + EASING;
+    contentAreaEl.style.willChange = 'transform';
+
+    /* 4. Append overlay to scroll area */
+    scrollAreaEl.style.position = 'relative';
+    scrollAreaEl.appendChild(overlay);
+
+    /* 5. Trigger the slide on the next frame */
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        contentAreaEl.style.transform = 'translateY(-100%)';
+        overlay.style.transform = 'translateY(0)';
+      });
+    });
+
+    /* 6. After animation completes, finalize state */
+    overlay.addEventListener('transitionend', function handler(e) {
+      if (e.target !== overlay) return;
+      overlay.removeEventListener('transitionend', handler);
+
+      /* Apply real Deep Reads state */
+      activeMode = 'deepReads';
+      updateFocusedPills();
+
+      var frame = document.getElementById('device-frame');
+      if (viewEl) {
+        viewEl.classList.add('reading-mode-view--deep');
+      }
+      if (frame) {
+        frame.classList.remove('reading-mode-focused-frame');
+        frame.classList.add('reading-mode-deepreads-frame');
+      }
+
+      /* Move rendered DR content into contentAreaEl */
+      contentAreaEl.innerHTML = '';
+      contentAreaEl.style.transition = '';
+      contentAreaEl.style.transform = '';
+      contentAreaEl.style.willChange = '';
+      while (drWrap.firstChild) {
+        contentAreaEl.appendChild(drWrap.firstChild);
+      }
+
+      /* Clean up overlay */
+      overlay.remove();
+
+      /* Restore scroll area */
+      scrollAreaEl.style.overflowY = '';
+      scrollAreaEl.style.position = '';
+
+      /* Re-attach Deep Reads event listeners (snap-swipe needs them on the
+         new DOM nodes).  Easiest: re-render into the real contentAreaEl. */
+      contentAreaEl.innerHTML = '';
+      drIndex = 0;
+      drPages = [];
+      drCounterEl = null;
+      renderDeepReads(contentAreaEl);
+    }, false);
+  }
+
   /* ── QB done screen ── */
   function showQuickBitesDone() {
     if (!contentAreaEl) return;
     contentAreaEl.innerHTML = '';
+    /* Lock the scroll container so the browser doesn't consume wheel events */
+    if (scrollAreaEl) scrollAreaEl.style.overflowY = 'hidden';
     var done = document.createElement('div');
     done.className = 'reading-mode-qb-done';
-    done.innerHTML =
+
+    /* Checkmark icon (black circle, animated) */
+    var iconHtml =
       '<div class="reading-mode-qb-done-icon">' +
-        '<svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>' +
-      '</div>' +
-      '<h3 class="reading-mode-qb-done-title">You\u2019re all caught up!</h3>' +
-      '<p class="reading-mode-qb-done-subtitle">Check back later for more stories.</p>';
+        '<svg width="20" height="20" viewBox="0 0 20 20" fill="none">' +
+          '<path class="reading-mode-qb-done-check-path" d="M4 10.5l4 4 8-9" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' +
+        '</svg>' +
+      '</div>';
+
+    /* Title */
+    var titleHtml = '<h3 class="reading-mode-qb-done-title">You\u2019re caught up</h3>';
+
+    /* CTA: See more news (only if batch 2 hasn't been shown yet) */
+    var ctaHtml = '';
+    if (qbBatch === 0 && STORIES.quickBitesBatch2 && STORIES.quickBitesBatch2.length > 0) {
+      ctaHtml = '<button type="button" class="reading-mode-qb-done-cta" id="qb-see-more-btn">See more news</button>';
+    }
+
+    /* Divider */
+    var dividerHtml = '<div class="reading-mode-qb-done-divider"></div>';
+
+    /* Keep reading prompt + bouncing arrow */
+    var promptHtml =
+      '<p class="reading-mode-qb-done-prompt">Keep reading for deeper stories</p>' +
+      '<div class="reading-mode-qb-done-arrow" id="qb-keep-reading-arrow">\u2193</div>';
+
+    done.innerHTML = iconHtml + titleHtml + ctaHtml + dividerHtml + promptHtml;
     contentAreaEl.appendChild(done);
+
+    /* Trigger checkmark animation after paint */
+    requestAnimationFrame(function () {
+      var iconEl = done.querySelector('.reading-mode-qb-done-icon');
+      if (iconEl) iconEl.classList.add('reading-mode-qb-done-icon--animate');
+    });
+
+    /* Wire "See more news" → load batch 2 with animation */
+    var seeMoreBtn = document.getElementById('qb-see-more-btn');
+    if (seeMoreBtn) {
+      on(seeMoreBtn, 'click', function () {
+        qbBatch = 1;
+        contentAreaEl.innerHTML = '';
+        renderQuickBites(contentAreaEl, STORIES.quickBitesBatch2);
+
+        /* Entrance animation on the new card stack */
+        var wrapper = contentAreaEl.querySelector('.reading-mode-qb-wrapper');
+        if (wrapper) {
+          wrapper.classList.add('reading-mode-qb-wrapper--entering');
+          wrapper.addEventListener('animationend', function () {
+            wrapper.classList.remove('reading-mode-qb-wrapper--entering');
+          }, { once: true });
+        }
+      });
+    }
+
+    /* Wire "Keep reading" arrow + prompt → transition to Deep Reads */
+    var arrowEl = document.getElementById('qb-keep-reading-arrow');
+    if (arrowEl) {
+      on(arrowEl, 'click', function () {
+        switchFocusedMode('deepReads');
+      });
+    }
+    var promptEl = done.querySelector('.reading-mode-qb-done-prompt');
+    if (promptEl) {
+      promptEl.style.cursor = 'pointer';
+      on(promptEl, 'click', function () {
+        switchFocusedMode('deepReads');
+      });
+    }
+
+    /* Scroll / swipe up on the done screen → transition to Deep Reads.
+       The wheel listener must live on scrollAreaEl (the .reading-mode-scroll
+       container with overflow-y:auto) because it absorbs wheel events before
+       they reach the done div.  { passive: false } is required so
+       preventDefault() is honoured and the container doesn't scroll-chain. */
+    var doneTransitioned = false;
+    function goDeep() {
+      if (doneTransitioned) return;
+      doneTransitioned = true;
+      slideToDeepReads(done);
+    }
+
+    var scrollTarget = scrollAreaEl || done;
+
+    /* Mouse wheel: deltaY > 0 means scrolling down (content moves up) */
+    on(scrollTarget, 'wheel', function (e) {
+      if (doneTransitioned) return;
+      if (e.deltaY > 20) {
+        e.preventDefault();
+        goDeep();
+      }
+    }, { passive: false });
+
+    /* Touch: swipe up (finger moves from bottom to top) */
+    var touchStartY = null;
+    on(scrollTarget, 'touchstart', function (e) {
+      if (doneTransitioned) return;
+      touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+    on(scrollTarget, 'touchmove', function (e) {
+      if (doneTransitioned || touchStartY === null) return;
+      var deltaY = touchStartY - e.changedTouches[0].clientY;
+      if (deltaY > 40) {
+        e.preventDefault();
+        touchStartY = null;
+        goDeep();
+      }
+    }, { passive: false });
+    on(scrollTarget, 'touchend', function () {
+      touchStartY = null;
+    });
   }
 
   /* ── Deep Reads renderer (full-screen vertical snap pages) ── */
@@ -9927,9 +10452,8 @@ commentsHeader.innerHTML =
     function onPointerMove(y) {
       if (!dragging) return;
       currentDelta = y - startY;
-      /* Resist at edges */
+      /* Resist at top edge only; bottom edge allows pull toward Rare Gem */
       if (drIndex === 0 && currentDelta > 0) currentDelta *= 0.3;
-      if (drIndex === total - 1 && currentDelta < 0) currentDelta *= 0.3;
       positionPages(currentDelta);
     }
 
@@ -9939,7 +10463,12 @@ commentsHeader.innerHTML =
       var elapsed = Date.now() - startTime;
       var velocity = elapsed > 0 ? currentDelta / elapsed : 0;
 
-      if ((currentDelta < -80 || velocity < -0.5) && drIndex < total - 1) {
+      if ((currentDelta < -80 || velocity < -0.5) && drIndex === total - 1) {
+        /* Last page + swiped forward → slide to Rare Gem */
+        snapPages();
+        slideToRareGem();
+        return;
+      } else if ((currentDelta < -80 || velocity < -0.5) && drIndex < total - 1) {
         drIndex++;
       } else if ((currentDelta > 80 || velocity > 0.5) && drIndex > 0) {
         drIndex--;
@@ -9972,6 +10501,103 @@ commentsHeader.innerHTML =
     listeners.push({ el: wrap, evt: 'mousedown', fn: onMouseDown });
     listeners.push({ el: document, evt: 'mousemove', fn: onMouseMove });
     listeners.push({ el: document, evt: 'mouseup', fn: onMouseUp });
+
+    /* Scroll wheel / trackpad snap */
+    var wheelCooldown = false;
+    var onWheel = function (e) {
+      e.preventDefault();
+      if (wheelCooldown || dragging) return;
+      var dy = e.deltaY;
+      if (dy > 20 && drIndex === total - 1) {
+        /* Last page + scrolled forward → slide to Rare Gem */
+        slideToRareGem();
+        wheelCooldown = true;
+        return;
+      } else if (dy > 20 && drIndex < total - 1) {
+        drIndex++;
+        snapPages();
+        wheelCooldown = true;
+        setTimeout(function () { wheelCooldown = false; }, 500);
+      } else if (dy < -20 && drIndex > 0) {
+        drIndex--;
+        snapPages();
+        wheelCooldown = true;
+        setTimeout(function () { wheelCooldown = false; }, 500);
+      }
+    };
+    wrap.addEventListener('wheel', onWheel, { passive: false });
+    listeners.push({ el: wrap, evt: 'wheel', fn: onWheel });
+  }
+
+  /* ── Slide-up transition from Deep Reads → Rare Gem ── */
+  function slideToRareGem() {
+    if (!scrollAreaEl || !contentAreaEl) { switchFocusedMode('rareGem'); return; }
+
+    var DURATION = 480;
+    var EASING = 'cubic-bezier(0.4, 0, 0.15, 1)';
+
+    /* 1. Create overlay for Rare Gem content, positioned below */
+    var overlay = document.createElement('div');
+    overlay.style.cssText =
+      'position:absolute;top:0;left:0;right:0;bottom:0;' +
+      'background:#e8e8e8;overflow-y:auto;' +
+      'transform:translateY(100%);' +
+      'transition:transform ' + DURATION + 'ms ' + EASING + ';' +
+      'z-index:3;';
+
+    /* 2. Pre-render Rare Gem feed into the overlay */
+    var feedWrap = document.createElement('div');
+    feedWrap.style.cssText = 'min-height:100%;';
+    renderStandardFeed(feedWrap, 'rareGem');
+    overlay.appendChild(feedWrap);
+
+    /* 3. Prepare current Deep Reads content for sliding up */
+    contentAreaEl.style.transition = 'transform ' + DURATION + 'ms ' + EASING;
+    contentAreaEl.style.willChange = 'transform';
+
+    /* 4. Append overlay to scroll area */
+    scrollAreaEl.appendChild(overlay);
+
+    /* 5. Trigger the slide on the next frame */
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        contentAreaEl.style.transform = 'translateY(-100%)';
+        overlay.style.transform = 'translateY(0)';
+      });
+    });
+
+    /* 6. After animation completes, finalize state */
+    overlay.addEventListener('transitionend', function handler(e) {
+      if (e.target !== overlay) return;
+      overlay.removeEventListener('transitionend', handler);
+
+      /* Apply Rare Gem state */
+      activeMode = 'rareGem';
+      updateFocusedPills();
+
+      var frame = document.getElementById('device-frame');
+      if (viewEl) viewEl.classList.remove('reading-mode-view--deep');
+      if (frame) {
+        frame.classList.remove('reading-mode-deepreads-frame');
+        frame.classList.add('reading-mode-focused-frame');
+      }
+
+      /* Swap content into contentAreaEl */
+      contentAreaEl.innerHTML = '';
+      contentAreaEl.style.transition = '';
+      contentAreaEl.style.transform = '';
+      contentAreaEl.style.willChange = '';
+
+      /* Clean up overlay */
+      overlay.remove();
+
+      /* Restore scroll area */
+      scrollAreaEl.style.overflowY = '';
+
+      /* Render Rare Gem properly into the real content area */
+      renderStandardFeed(contentAreaEl, 'rareGem');
+      if (scrollAreaEl) scrollAreaEl.scrollTop = 0;
+    }, false);
   }
 
   /* ── Standard feed renderer (Rare Gem) ── */
@@ -10191,6 +10817,12 @@ commentsHeader.innerHTML =
   var fyActivated = false;
   var toastTimer = null;
   var catchupObserver = null;
+  var viewEl = null;
+  var frameEl = null;
+  var chromeTopEl = null;
+  var chromeCollapsed = false;
+  var lastScrollTop = 0;
+  var scrollThreshold = 40;
 
   var TRANSITION_DISTANCE = 250;
 
@@ -10199,10 +10831,20 @@ commentsHeader.innerHTML =
       type: 'video-carousel',
       why: 'Because you watch Tech & Science',
       videos: [
-        { thumb: '../Article-Overview/Assets/Images/1.webp', title: 'How A.I. Is Reshaping the Battlefield', duration: '4:32', source: 'NYT Video' },
-        { thumb: '../Article-Overview/Assets/Images/5.webp', title: 'Inside the Climate Lab Racing Against Time', duration: '6:18', source: 'NYT Video' },
-        { thumb: '../Article-Overview/Assets/Images/3.webp', title: 'The Design of Everything Around You', duration: '3:45', source: 'NYT Video' },
-        { thumb: '../Article-Overview/Assets/Images/2.webp', title: 'What the Economic Data Really Shows', duration: '5:10', source: 'NYT Video' }
+        { thumb: '../Article-Overview/Assets/Images/video-1.jpg', title: 'How A.I. Is Reshaping the Battlefield', duration: '4:32', source: 'NYT Video' },
+        { thumb: '../Article-Overview/Assets/Images/video-2.jpg', title: 'Inside the Climate Lab Racing Against Time', duration: '6:18', source: 'NYT Video' },
+        { thumb: '../Article-Overview/Assets/Images/video-3.jpg', title: 'The Design of Everything Around You', duration: '3:45', source: 'NYT Video' },
+        { thumb: '../Article-Overview/Assets/Images/video-4.jpg', title: 'What the Economic Data Really Shows', duration: '5:10', source: 'NYT Video' }
+      ]
+    },
+    {
+      type: 'image-carousel',
+      why: 'Because you followed Oscar live report',
+      images: [
+        '../Article-Overview/Assets/Images/oscar-1.jpg',
+        '../Article-Overview/Assets/Images/oscar-2.jpg',
+        '../Article-Overview/Assets/Images/oscar-3.jpg',
+        '../Article-Overview/Assets/Images/oscar-4.jpg'
       ]
     },
     {
@@ -10210,21 +10852,21 @@ commentsHeader.innerHTML =
       why: 'Because you read about Tech',
       title: 'Inside the New A.I. Chip Race',
       meta: 'Technology \u00b7 8 min read',
-      image: '../Article-Overview/Assets/Images/4.webp'
+      image: '../Article-Overview/Assets/Images/foryou-1.jpg'
     },
     {
       type: 'article',
       why: 'Because you follow Climate',
       title: 'The Coastline Is Moving Faster Than Maps',
       meta: 'Climate \u00b7 11 min read',
-      image: '../Article-Overview/Assets/Images/2.webp'
+      image: '../Article-Overview/Assets/Images/foryou-2.jpg'
     },
     {
       type: 'article',
       why: 'Because you read about Design',
       title: 'The Luxury Minimalism Trend in News Apps',
       meta: 'Design \u00b7 6 min read',
-      image: '../Article-Overview/Assets/Images/3.webp'
+      image: '../Article-Overview/Assets/Images/foryou-3.jpg'
     }
   ];
 
@@ -10518,6 +11160,83 @@ commentsHeader.innerHTML =
     return page;
   }
 
+  /* ── Image carousel page (no play buttons, no captions) ── */
+  function buildImagePage(item, pageIndex) {
+    var page = document.createElement('div');
+    page.className = 'today-foryou-fy-page today-foryou-fy-page--images';
+    page.style.transform = pageIndex === 0 ? 'translateY(0)' : 'translateY(' + (pageIndex * 100) + '%)';
+
+    var inner = document.createElement('div');
+    inner.className = 'today-foryou-images-inner';
+
+    var carousel = document.createElement('div');
+    carousel.className = 'today-foryou-images-carousel';
+
+    for (var g = 0; g < item.images.length; g++) {
+      var card = document.createElement('div');
+      card.className = 'today-foryou-images-card';
+      card.innerHTML = '<img src="' + item.images[g] + '" alt="" />';
+      carousel.appendChild(card);
+    }
+
+    var whyEl = document.createElement('span');
+    whyEl.className = 'today-foryou-images-why';
+    whyEl.textContent = item.why;
+    inner.appendChild(whyEl);
+
+    inner.appendChild(carousel);
+    page.appendChild(inner);
+
+    /* Mouse-drag for horizontal carousel on desktop (with momentum) */
+    var cDragging = false, cStartX = 0, cScrollLeft = 0;
+    var cLastX = 0, cLastTime = 0, cVelocity = 0, cRaf = 0;
+
+    carousel.style.cursor = 'grab';
+
+    carousel.addEventListener('mousedown', function (e) {
+      cancelAnimationFrame(cRaf);
+      cDragging = true;
+      cStartX = e.clientX;
+      cLastX = e.clientX;
+      cLastTime = Date.now();
+      cVelocity = 0;
+      cScrollLeft = carousel.scrollLeft;
+      carousel.classList.add('dragging');
+      carousel.style.cursor = 'grabbing';
+      e.stopPropagation();
+      e.preventDefault();
+    });
+
+    carousel.addEventListener('mousemove', function (e) {
+      if (!cDragging) return;
+      e.preventDefault();
+      var now = Date.now();
+      var dx = e.clientX - cLastX;
+      var dt = now - cLastTime;
+      if (dt > 0) cVelocity = dx / dt;
+      cLastX = e.clientX;
+      cLastTime = now;
+      carousel.scrollLeft = cScrollLeft - (e.clientX - cStartX);
+    });
+
+    var endCarouselDrag = function () {
+      if (!cDragging) return;
+      cDragging = false;
+      carousel.style.cursor = 'grab';
+
+      var momentum = -cVelocity * 150;
+      var target = carousel.scrollLeft + momentum;
+
+      carousel.classList.remove('dragging');
+      carousel.scrollLeft = Math.max(0, Math.min(target, carousel.scrollWidth - carousel.clientWidth));
+    };
+
+    carousel.addEventListener('mouseup', endCarouselDrag);
+    carousel.addEventListener('mouseleave', endCarouselDrag);
+
+    return page;
+  }
+
   /* ── For You overlay with snap-swipe ── */
   function buildForYouOverlay() {
     var overlay = document.createElement('div');
@@ -10535,12 +11254,28 @@ commentsHeader.innerHTML =
     fyCounterEl.textContent = '1/' + total;
     container.appendChild(fyCounterEl);
 
+    var closeBtn = document.createElement('button');
+    closeBtn.className = 'today-foryou-fy-close';
+    closeBtn.setAttribute('aria-label', 'Close For You');
+    closeBtn.innerHTML = '&#x2715;';
+    container.appendChild(closeBtn);
+    /* Stop gesture handlers on container from swallowing the tap */
+    on(closeBtn, 'touchstart', function (e) { e.stopPropagation(); });
+    on(closeBtn, 'mousedown', function (e) { e.stopPropagation(); });
+    on(closeBtn, 'click', function () {
+      /* Force activeTab so setTab's guard doesn't bail */
+      activeTab = 'foryou';
+      setTab('today');
+    });
+
     for (var i = 0; i < total; i++) {
       var item = FOR_YOU_ITEMS[i];
       var page;
 
       if (item.type === 'video-carousel') {
         page = buildVideoPage(item, i);
+      } else if (item.type === 'image-carousel') {
+        page = buildImagePage(item, i);
       } else {
         page = document.createElement('div');
         page.className = 'today-foryou-fy-page';
@@ -10585,7 +11320,8 @@ commentsHeader.innerHTML =
     }
 
     function isOnVideoCarousel() {
-      return FOR_YOU_ITEMS[fyIndex] && FOR_YOU_ITEMS[fyIndex].type === 'video-carousel';
+      var t = FOR_YOU_ITEMS[fyIndex] && FOR_YOU_ITEMS[fyIndex].type;
+      return t === 'video-carousel' || t === 'image-carousel';
     }
 
     function onPointerStart(x, y) {
@@ -10704,6 +11440,20 @@ commentsHeader.innerHTML =
 
   /* ── Scroll-driven transition ── */
   function onScroll() {
+    var st = scrollerEl.scrollTop;
+    var scrollDelta = st - lastScrollTop;
+    lastScrollTop = st;
+
+    if (!fyActivated && viewEl) {
+      if (scrollDelta > 0 && st > scrollThreshold && !chromeCollapsed) {
+        chromeCollapsed = true;
+        viewEl.classList.add('chrome-collapsed');
+      } else if (scrollDelta < 0 && chromeCollapsed) {
+        chromeCollapsed = false;
+        viewEl.classList.remove('chrome-collapsed');
+      }
+    }
+
     if (fyActivated) return;
     var maxScroll = scrollerEl.scrollHeight - scrollerEl.clientHeight;
     var scrollBottom = maxScroll - scrollerEl.scrollTop;
@@ -10740,6 +11490,16 @@ commentsHeader.innerHTML =
     fyOverlay.classList.add('active');
     scrollerEl.style.overflow = 'hidden';
 
+    /* Collapse chrome if not already */
+    if (!chromeCollapsed && viewEl) {
+      chromeCollapsed = true;
+      viewEl.classList.add('chrome-collapsed');
+    }
+
+    /* Enter immersive mode */
+    if (viewEl) viewEl.classList.add('fy-immersive');
+    if (frameEl) frameEl.classList.add('fy-fullbleed');
+
     /* Switch pill */
     updatePills('foryou');
     activeTab = 'foryou';
@@ -10765,13 +11525,26 @@ commentsHeader.innerHTML =
     activeTab = 'today';
     updatePills('today');
 
+    /* Exit immersive mode */
+    if (viewEl) viewEl.classList.remove('fy-immersive');
+    if (frameEl) frameEl.classList.remove('fy-fullbleed');
+
     /* Animate overlay back down */
     fyOverlay.classList.add('animate');
     fyOverlay.classList.remove('active');
     fyOverlay.style.transform = 'translateY(100%)';
 
-    /* Re-enable feed scroll (stays at bottom where user left off) */
+    /* Reset scroll BEFORE re-enabling overflow so the scroll
+       handler doesn't see the bottom position and re-activate */
+    scrollerEl.scrollTop = 0;
+    lastScrollTop = 0;
     scrollerEl.style.overflow = '';
+
+    /* Expand chrome */
+    if (chromeCollapsed && viewEl) {
+      chromeCollapsed = false;
+      viewEl.classList.remove('chrome-collapsed');
+    }
 
     /* Hide toast */
     if (toastEl) toastEl.classList.remove('visible');
@@ -10804,8 +11577,13 @@ commentsHeader.innerHTML =
       fyOverlay.classList.add('animate');
       fyOverlay.classList.remove('active');
       fyOverlay.style.transform = 'translateY(100%)';
-      scrollerEl.style.overflow = '';
       fyActivated = false;
+
+      /* Reset scroll BEFORE re-enabling overflow to prevent
+         the scroll handler from re-activating the overlay */
+      scrollerEl.scrollTop = 0;
+      lastScrollTop = 0;
+      scrollerEl.style.overflow = '';
 
       /* Reset snap-swipe */
       fyIndex = 0;
@@ -10814,9 +11592,14 @@ commentsHeader.innerHTML =
         fyPages[p].style.transform = 'translateY(' + (p * 100) + '%)';
       }
       if (fyCounterEl) fyCounterEl.textContent = '1/' + fyPages.length;
+      if (chromeCollapsed && viewEl) {
+        chromeCollapsed = false;
+        viewEl.classList.remove('chrome-collapsed');
+      }
 
-      /* Scroll to top */
-      scrollerEl.scrollTop = 0;
+      /* Exit immersive mode */
+      if (viewEl) viewEl.classList.remove('fy-immersive');
+      if (frameEl) frameEl.classList.remove('fy-fullbleed');
 
       /* Hide toast */
       if (toastEl) toastEl.classList.remove('visible');
@@ -10831,6 +11614,16 @@ commentsHeader.innerHTML =
       fyOverlay.classList.add('active');
       scrollerEl.style.overflow = 'hidden';
       fyActivated = true;
+
+      /* Collapse chrome */
+      if (!chromeCollapsed && viewEl) {
+        chromeCollapsed = true;
+        viewEl.classList.add('chrome-collapsed');
+      }
+
+      /* Enter immersive mode */
+      if (viewEl) viewEl.classList.add('fy-immersive');
+      if (frameEl) frameEl.classList.add('fy-fullbleed');
 
       /* Reset snap-swipe */
       fyIndex = 0;
@@ -10878,6 +11671,7 @@ commentsHeader.innerHTML =
   function mount(contentEl, scrollEl) {
     scrollEl.classList.add('today-foryou-fill');
     contentEl.classList.add('today-foryou-fill');
+    frameEl = document.getElementById('device-frame');
 
     listeners = [];
     pillButtons = [];
@@ -10886,14 +11680,21 @@ commentsHeader.innerHTML =
     fyPages = [];
     fyCounterEl = null;
     fyActivated = false;
+    chromeCollapsed = false;
+    lastScrollTop = 0;
     if (toastTimer) clearTimeout(toastTimer);
     toastTimer = null;
 
     var view = document.createElement('div');
     view.className = 'today-foryou-view';
+    viewEl = view;
 
-    view.appendChild(buildNav());
-    view.appendChild(buildRibbon());
+    chromeTopEl = document.createElement('div');
+    chromeTopEl.className = 'today-foryou-chrome-top';
+    chromeTopEl.appendChild(buildNav());
+    chromeTopEl.appendChild(buildRibbon());
+    view.appendChild(chromeTopEl);
+
     view.appendChild(buildPillRow());
 
     /* Content area: scroll + overlay + toast */
@@ -10978,6 +11779,12 @@ commentsHeader.innerHTML =
     fyCounterEl = null;
     fyActivated = false;
     toastTimer = null;
+    viewEl = null;
+    if (frameEl) frameEl.classList.remove('fy-fullbleed');
+    frameEl = null;
+    chromeTopEl = null;
+    chromeCollapsed = false;
+    lastScrollTop = 0;
   }
 
   window.__registerPrototype({
@@ -11226,6 +12033,7 @@ commentsHeader.innerHTML =
     var header = document.createElement('header');
     header.className = 'recap-email-header';
     header.innerHTML =
+      '<p class="recap-email-date">Sunday, March 23, 2025</p>' +
       '<h2 class="recap-email-title">Your Weekly Brief</h2>';
     emailInner.appendChild(header);
 
@@ -11236,52 +12044,51 @@ commentsHeader.innerHTML =
     resume.className = 'recap-email-module';
     resume.innerHTML =
       '<div class="recap-email-module-head">' +
-        '<div class="recap-email-module-icon" style="background:#1a3a5c"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 2h8a1 1 0 011 1v11.5l-4.5-3-4.5 3V3a1 1 0 011-1z" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>' +
-        '<p class="recap-email-module-title">Resume reading</p>' +
+        '<p class="recap-email-module-title">Resume Reading</p>' +
       '</div>' +
-      '<img class="recap-email-thumb" src="../Article-Overview/Assets/Images/1.webp" alt="">' +
+      '<img class="recap-email-thumb" src="../Article-Overview/Assets/Images/email-1.jpg" alt="">' +
       '<p class="recap-email-text">' + RECAP_DATA.article + '</p>' +
-      '<p class="recap-email-meta">You left off mid-analysis \u00b7 ' + RECAP_DATA.progress + '% complete</p>' +
+      '<p class="recap-email-summary">You left off mid-analysis on this piece. Pick up where you stopped.</p>' +
+      '<p class="recap-email-meta">' + RECAP_DATA.progress + '% complete</p>' +
       '<div class="recap-progress-row">' +
         '<div class="recap-progress-track"><div class="recap-progress-fill" style="width:' + RECAP_DATA.progress + '%"></div></div>' +
       '</div>' +
-      '<button type="button" class="recap-email-cta">Continue Reading <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M7 3l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>';
+      '<button type="button" class="recap-email-cta">Continue reading <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 5h7M5.5 2.5L8 5l-2.5 2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>';
     body.appendChild(resume);
 
     var gap = document.createElement('section');
     gap.className = 'recap-email-module';
     gap.innerHTML =
       '<div class="recap-email-module-head">' +
-        '<div class="recap-email-module-icon" style="background:#b8860b"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 13h4M6.5 14h3M8 1.5a4.5 4.5 0 00-2 8.5v1.5h4V10a4.5 4.5 0 00-2-8.5z" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>' +
         '<p class="recap-email-module-title">The Knowledge Gap</p>' +
       '</div>' +
-      '<p class="recap-email-text">' + RECAP_DATA.knowledgeGap + '</p>' +
+      '<p class="recap-email-text">Why Bond Market Pricing Diverged From Labor Data</p>' +
+      '<p class="recap-email-summary">' + RECAP_DATA.knowledgeGap + '</p>' +
       '<p class="recap-email-meta">3 stories this week \u00b7 1 missing piece</p>' +
-      '<button type="button" class="recap-email-cta">Fill the Gap <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M7 3l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>';
+      '<button type="button" class="recap-email-cta">Read more <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 5h7M5.5 2.5L8 5l-2.5 2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>';
     body.appendChild(gap);
 
     var pulse = document.createElement('section');
     pulse.className = 'recap-email-module';
     pulse.innerHTML =
       '<div class="recap-email-module-head">' +
-        '<div class="recap-email-module-icon" style="background:#6b4fa2"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2.5 3h11a1 1 0 011 1v6a1 1 0 01-1 1H5l-3 2.5V4a1 1 0 011-1z" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="5.5" cy="7" r="0.7" fill="#fff"/><circle cx="8" cy="7" r="0.7" fill="#fff"/><circle cx="10.5" cy="7" r="0.7" fill="#fff"/></svg></div>' +
         '<p class="recap-email-module-title">Community Insight</p>' +
       '</div>' +
-      '<img class="recap-email-thumb" src="../Article-Overview/Assets/Images/2.webp" alt="">' +
-      '<p class="recap-email-text">' + RECAP_DATA.community + '</p>' +
+      '<img class="recap-email-thumb" src="../Article-Overview/Assets/Images/email-2.jpg" alt="">' +
+      '<p class="recap-email-text">The Climate Accord Conversation Shifts Toward Policy Tradeoffs</p>' +
+      '<p class="recap-email-summary">' + RECAP_DATA.community + '</p>' +
       '<p class="recap-email-meta">50 new replies \u00b7 trending in your circle</p>' +
-      '<button type="button" class="recap-email-cta">Join the Conversation <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M7 3l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>';
+      '<button type="button" class="recap-email-cta">Join the conversation <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 5h7M5.5 2.5L8 5l-2.5 2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>';
     body.appendChild(pulse);
 
     var tuning = document.createElement('section');
     tuning.className = 'recap-email-module';
     tuning.innerHTML =
       '<div class="recap-email-module-head">' +
-        '<div class="recap-email-module-icon" style="background:#2e7d5b"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><line x1="2" y1="4.5" x2="14" y2="4.5" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/><line x1="2" y1="8" x2="14" y2="8" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/><line x1="2" y1="11.5" x2="14" y2="11.5" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/><circle cx="5" cy="4.5" r="1.5" fill="#fff"/><circle cx="10" cy="8" r="1.5" fill="#fff"/><circle cx="7" cy="11.5" r="1.5" fill="#fff"/></svg></div>' +
-        '<p class="recap-email-module-title">Content Tuning</p>' +
+        '<p class="recap-email-module-title">Your Preferences</p>' +
       '</div>' +
       '<p class="recap-email-text">' + RECAP_DATA.tuningPrompt + '</p>' +
-      '<p class="recap-email-meta">Help us personalize your experience</p>' +
+      '<p class="recap-email-summary">Help us personalize your experience by telling us what\u2019s working.</p>' +
       '<div class="recap-reaction-row">' +
         '<button type="button" class="recap-react-btn" aria-label="Helpful"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M4 6.5V12H2.5a1 1 0 01-1-1V7.5a1 1 0 011-1H4zm0 0l2-5a1.5 1.5 0 011.5-1.5h.1a1 1 0 011 1V4.5h3.15a1.5 1.5 0 011.48 1.74l-.9 5A1.5 1.5 0 0110.8 12.5H4" stroke="#333" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg> Helpful</button>' +
         '<button type="button" class="recap-react-btn" aria-label="Less like this"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M10 7.5V2H11.5a1 1 0 011 1V6.5a1 1 0 01-1 1H10zm0 0l-2 5a1.5 1.5 0 01-1.5 1.5h-.1a1 1 0 01-1-1V9.5H2.25a1.5 1.5 0 01-1.48-1.74l.9-5A1.5 1.5 0 013.15 1.5H10" stroke="#333" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg> Less like this</button>' +

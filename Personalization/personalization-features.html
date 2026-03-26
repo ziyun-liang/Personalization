@@ -1178,15 +1178,16 @@ html, body {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #d9d9d9;
+  background: var(--nyt-social-avatar-bg, #d9d9d9);
   border: 2px solid #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'NYTFranklin', sans-serif;
+  font-family: 'NYTKarnak', 'NYTFranklin', sans-serif;
   font-size: 13px;
   font-weight: 700;
-  color: #555;
+  line-height: 1;
+  color: var(--nyt-social-avatar-fg, #fff);
   flex-shrink: 0;
 }
 .inline-chat-you-updates-avatar:not(:first-child) {
@@ -1780,14 +1781,16 @@ html, body {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--nyt-social-avatar-bg, #e4e4e4);
   border: 1px solid #e8e8e8;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
+  font-family: 'NYTKarnak', 'NYTFranklin', sans-serif;
+  font-weight: 700;
   font-size: 10px;
-  color: var(--muted);
+  line-height: 1;
+  color: var(--nyt-social-avatar-fg, #fff);
 }
 .inline-chat-comment-text {
   font-family: var(--type-ui-13-font-family);
@@ -2055,9 +2058,7 @@ html, body {
 
 /* ── "You" avatar variant ─────────────────────────────── */
 .inline-chat-avatar--you {
-  background: var(--tpl-accent, #326891) !important;
-  color: #fff !important;
-  border: none !important;
+  border-color: transparent;
 }
 
 /* ── New-message flash animation ──────────────────────── */
@@ -2540,10 +2541,11 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'NYTFranklin', sans-serif;
+  font-family: 'NYTKarnak', 'NYTFranklin', sans-serif;
   font-weight: 700;
   font-size: 14px;
-  color: #fff;
+  line-height: 1;
+  color: var(--nyt-social-avatar-fg, #fff);
   transition: box-shadow 0.15s, transform 0.12s;
 }
 .clip-discuss-friend--selected .clip-discuss-friend-avatar {
@@ -2950,10 +2952,11 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'NYTFranklin', sans-serif;
+  font-family: 'NYTKarnak', 'NYTFranklin', sans-serif;
   font-weight: 700;
   font-size: 13px;
-  color: #fff;
+  line-height: 1;
+  color: var(--nyt-social-avatar-fg, #fff);
 }
 .cd-activity-body {
   flex: 1;
@@ -4197,14 +4200,15 @@ html, body {
   width: 29px;
   height: 29px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.25);
+  background: var(--nyt-social-avatar-bg, rgba(255,255,255,0.25));
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'NYTFranklin', sans-serif;
+  font-family: 'NYTKarnak', 'NYTFranklin', sans-serif;
   font-weight: 700;
   font-size: 13px;
-  color: #fff;
+  color: var(--nyt-social-avatar-fg, #fff);
+  line-height: 1;
   flex-shrink: 0;
 }
 .reading-mode-dr-author-info {
@@ -6222,6 +6226,7 @@ html, body {
   var registry = [];
   var activeId = null;
   var pendingRecapEntry = null;
+  var pendingGroupChatEntry = null;
   var contentEl = document.getElementById('prototype-content');
   var scrollEl  = document.getElementById('content-scroll');
   var listEl    = document.getElementById('sidebar-list');
@@ -6257,6 +6262,10 @@ html, body {
     if (id === 're-engagement-loops' && pendingRecapEntry && window.__setRecapResumeEntry) {
       window.__setRecapResumeEntry(pendingRecapEntry);
       pendingRecapEntry = null;
+    }
+    if (id === 'group-chat' && pendingGroupChatEntry && window.__setGroupChatEntry) {
+      window.__setGroupChatEntry(pendingGroupChatEntry);
+      pendingGroupChatEntry = null;
     }
 
     // Update sidebar active state
@@ -6315,6 +6324,42 @@ html, body {
 
         li.appendChild(subList);
       }
+
+      if (registry[i].id === 'group-chat') {
+        var gcSubList = document.createElement('ul');
+        gcSubList.className = 'sidebar-sublist';
+        var gcEntries = [
+          { id: 'in-feed', label: 'in-feed udpate' },
+          { id: 'in-article-chat', label: 'In-article chat' }
+        ];
+
+        for (var g = 0; g < gcEntries.length; g++) {
+          var gcLi = document.createElement('li');
+          var gcBtn = document.createElement('button');
+          gcBtn.className = 'sidebar-subitem';
+          gcBtn.textContent = gcEntries[g].label;
+          gcBtn.setAttribute('data-entry-id', gcEntries[g].id);
+          gcBtn.addEventListener('click', (function (entryId) {
+            return function () {
+              pendingGroupChatEntry = entryId;
+              activatePrototype('group-chat');
+              if (window.__setGroupChatEntry) {
+                window.__setGroupChatEntry(entryId);
+                pendingGroupChatEntry = null;
+              }
+              var subItems = listEl.querySelectorAll('.sidebar-subitem');
+              for (var q = 0; q < subItems.length; q++) {
+                subItems[q].classList.toggle('active', subItems[q].getAttribute('data-entry-id') === entryId);
+              }
+            };
+          })(gcEntries[g].id));
+          gcLi.appendChild(gcBtn);
+          gcSubList.appendChild(gcLi);
+        }
+
+        li.appendChild(gcSubList);
+      }
+
       listEl.appendChild(li);
     }
 
@@ -6348,6 +6393,76 @@ html, body {
       subItems[i].classList.toggle('active', subItems[i].getAttribute('data-entry-id') === entry);
     }
   });
+
+  window.addEventListener('groupChatEntryChange', function (evt) {
+    var entry = evt && evt.detail ? evt.detail.entry : null;
+    if (!entry) return;
+    var subItems = listEl.querySelectorAll('.sidebar-subitem');
+    for (var i = 0; i < subItems.length; i++) {
+      subItems[i].classList.toggle('active', subItems[i].getAttribute('data-entry-id') === entry);
+    }
+  });
+})();
+</script>
+
+<script>
+(function () {
+  'use strict';
+
+  if (window.__nytSocialAvatar) return;
+
+  var AVATAR_PALETTE = [
+    '#5b8a72',
+    '#7b6ba4',
+    '#c27853',
+    '#4a8bad',
+    '#a0785a',
+    '#b85c5c'
+  ];
+
+  function normalizeName(value) {
+    return String(value || '').trim();
+  }
+
+  function firstLetterFromPerson(person) {
+    var name = normalizeName(person && person.name);
+    if (name) {
+      var firstToken = name.split(/\s+/)[0] || '';
+      var charFromName = firstToken.replace(/[^A-Za-z]/g, '').charAt(0);
+      if (charFromName) return charFromName.toUpperCase();
+    }
+    var initials = normalizeName(person && person.initials).replace(/[^A-Za-z]/g, '');
+    if (initials) return initials.charAt(0).toUpperCase();
+    return '?';
+  }
+
+  function stablePaletteColor(person) {
+    var key = normalizeName(person && person.name) || normalizeName(person && person.initials) || '?';
+    var sum = 0;
+    for (var i = 0; i < key.length; i++) {
+      sum = (sum + key.charCodeAt(i) * (i + 1)) % 2147483647;
+    }
+    return AVATAR_PALETTE[sum % AVATAR_PALETTE.length];
+  }
+
+  function applyAvatar(el, person, options) {
+    if (!el) return;
+    var opts = options || {};
+    var color = opts.color || stablePaletteColor(person);
+    var letter = firstLetterFromPerson(person);
+    el.textContent = letter;
+    el.style.background = color;
+    el.style.color = opts.textColor || '#fff';
+    el.style.setProperty('--nyt-social-avatar-bg', color);
+    el.style.setProperty('--nyt-social-avatar-fg', opts.textColor || '#fff');
+  }
+
+  window.__nytSocialAvatar = {
+    palette: AVATAR_PALETTE.slice(),
+    firstLetterFromPerson: firstLetterFromPerson,
+    stablePaletteColor: stablePaletteColor,
+    applyAvatar: applyAvatar
+  };
 })();
 </script>
 
@@ -6590,6 +6705,7 @@ html, body {
   var navMenuBtnEl = null;
   var pathBCardDismissed = false;
   var pathBEntryActive = false;
+  var avatarTokens = window.__nytSocialAvatar;
 
   // ━━━ Compose event handler refs ━━━
   var onLiveSend = null;
@@ -6603,6 +6719,18 @@ html, body {
   var paragraphCount = ARTICLE.paragraphs.filter(function (block) {
     return !block.type || block.type === 'paragraph';
   }).length;
+
+  function applySocialAvatar(el, person, opts) {
+    if (!el) return;
+    if (avatarTokens && avatarTokens.applyAvatar) {
+      avatarTokens.applyAvatar(el, person, opts);
+      return;
+    }
+    var fallbackName = person && person.name ? String(person.name).trim() : '';
+    var fallbackInitials = person && person.initials ? String(person.initials).trim() : '';
+    var char = (fallbackName || fallbackInitials || '?').charAt(0).toUpperCase();
+    el.textContent = char;
+  }
 
   function setActiveParagraphIndex(idx) {
     activeIndex = idx;
@@ -7089,8 +7217,8 @@ html, body {
                   '<p class="inline-chat-you-updates-body">Priya N. and James R. replied on &quot;The Weather Is Getting Wilder...&quot;</p>' +
                 '</div>' +
                 '<div class="inline-chat-you-updates-avatars" aria-hidden="true">' +
-                  '<div class="inline-chat-you-updates-avatar">P</div>' +
-                  '<div class="inline-chat-you-updates-avatar">J</div>' +
+                  '<div class="inline-chat-you-updates-avatar" data-person-name="Priya N."></div>' +
+                  '<div class="inline-chat-you-updates-avatar" data-person-name="James R."></div>' +
                 '</div>' +
               '</div>' +
               '<div class="inline-chat-you-updates-cta" aria-hidden="true">Tap to see the thread</div>' +
@@ -7170,6 +7298,11 @@ html, body {
         '</nav>' +
       '</div>';
     pathBYouEl = pathBYou;
+    var pathBAvatars = pathBYou.querySelectorAll('.inline-chat-you-updates-avatar');
+    for (var p = 0; p < pathBAvatars.length; p++) {
+      var personName = pathBAvatars[p].getAttribute('data-person-name') || '';
+      applySocialAvatar(pathBAvatars[p], { name: personName });
+    }
     layer.appendChild(pathBYou);
 
     chatRoot.appendChild(layer);
@@ -7200,7 +7333,7 @@ html, body {
       av.className = 'inline-chat-avatar' + (c.isYou ? ' inline-chat-avatar--you' : '');
       av.setAttribute('aria-hidden', 'true');
       av.title = c.name;
-      av.textContent = c.initials;
+      applySocialAvatar(av, { name: c.name, initials: c.initials });
       var content = document.createElement('div');
       content.className = 'inline-chat-comment-content';
       var commentMeta = document.createElement('div');
@@ -8038,11 +8171,24 @@ commentsHeader.innerHTML =
   var cdJourneyState = 'none';
   var cdEnteredFromPathB = false;
   var cdPathBCardDismissed = false;
+  var avatarTokens = window.__nytSocialAvatar;
 
   // ━━━ Helpers ━━━
   function on(el, evt, fn) {
     el.addEventListener(evt, fn);
     listeners.push({ el: el, evt: evt, fn: fn });
+  }
+
+  function applySocialAvatar(el, person, opts) {
+    if (!el) return;
+    if (avatarTokens && avatarTokens.applyAvatar) {
+      avatarTokens.applyAvatar(el, person, opts);
+      return;
+    }
+    var fallbackName = person && person.name ? String(person.name).trim() : '';
+    var fallbackInitials = person && person.initials ? String(person.initials).trim() : '';
+    var char = (fallbackName || fallbackInitials || '?').charAt(0).toUpperCase();
+    el.textContent = char;
   }
 
   function buildNav() {
@@ -8506,12 +8652,13 @@ commentsHeader.innerHTML =
     var actCard = views.you.querySelector('[data-cd-activity-card]');
     if (actCard) {
       actCard.innerHTML =
-        '<div class="cd-activity-avatar" style="background:' + friend.color + '">' + friend.initials + '</div>' +
+        '<div class="cd-activity-avatar" data-cd-activity-avatar></div>' +
         '<div class="cd-activity-body">' +
           '<p class="cd-activity-title">' + friend.name + ' replied to your clip</p>' +
           '<p class="cd-activity-meta">' + ARTICLE.title + ' \u00b7 just now</p>' +
         '</div>' +
         '<svg class="cd-activity-chevron" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      applySocialAvatar(actCard.querySelector('[data-cd-activity-avatar]'), friend);
       // Re-bind click
       actCard.onclick = function () {
         transitionTo(STATE.THREAD);
@@ -8989,8 +9136,7 @@ commentsHeader.innerHTML =
 
       var avatar = document.createElement('div');
       avatar.className = 'clip-discuss-friend-avatar';
-      avatar.style.background = FRIENDS[f].color;
-      avatar.textContent = FRIENDS[f].initials;
+      applySocialAvatar(avatar, FRIENDS[f]);
       friendBtn.appendChild(avatar);
 
       var fName = document.createElement('span');
@@ -9265,7 +9411,7 @@ commentsHeader.innerHTML =
                   '<p class="inline-chat-you-updates-body">&ldquo;' + FRIEND_REPLIES[FRIENDS[0].name].substring(0, 80) + '...&rdquo;</p>' +
                 '</div>' +
                 '<div class="inline-chat-you-updates-avatars" aria-hidden="true">' +
-                  '<div class="inline-chat-you-updates-avatar" style="background:' + FRIENDS[0].color + ';color:#fff">' + FRIENDS[0].initials + '</div>' +
+                  '<div class="inline-chat-you-updates-avatar" data-cd-you-update-avatar="1"></div>' +
                 '</div>' +
               '</div>' +
               '<div class="inline-chat-you-updates-cta" aria-hidden="true">Tap to view the conversation</div>' +
@@ -9306,6 +9452,7 @@ commentsHeader.innerHTML =
         '</nav>' +
       '</div>';
     cdPathBYouScreenEl = pathBYouScreen;
+    applySocialAvatar(pathBYouScreen.querySelector('[data-cd-you-update-avatar="1"]'), FRIENDS[0]);
     cdLayer.appendChild(pathBYouScreen);
 
     contentEl.appendChild(cdLayer);
@@ -12309,6 +12456,1648 @@ commentsHeader.innerHTML =
   window.__registerPrototype({
     id: 're-engagement-loops',
     label: 'Re-engagement loops',
+    mount: mount,
+    unmount: unmount
+  });
+})();
+</script>
+
+<!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     Prototype: Group Chat — Styles
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+<style>
+/* ── Shared: view shell ── */
+.gc-view { width: 100%; height: 100%; position: relative; overflow: hidden; }
+.gc-panel { display: none; width: 100%; height: 100%; flex-direction: column; overflow: hidden; }
+.gc-panel--active { display: flex; }
+.gc-fill { width: 100%; height: 100%; overflow: hidden; }
+
+/* ── Shared: top bar ── */
+.gc-topbar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 16px 10px; min-height: 48px;
+  border-bottom: 1px solid #e8e8e8; background: #fff;
+  flex-shrink: 0;
+}
+.gc-topbar-back {
+  background: none; border: none; cursor: pointer; padding: 4px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 4px;
+}
+.gc-topbar-back:focus-visible { outline: 2px solid var(--tpl-accent); outline-offset: 1px; }
+.gc-topbar-title {
+  font-family: 'NYTFranklin', sans-serif; font-weight: 600;
+  font-size: 16px; line-height: 1.2; color: var(--ink); flex: 1;
+}
+.gc-topbar-subtitle {
+  font-family: 'NYTFranklin', sans-serif; font-weight: 500;
+  font-size: 12px; color: var(--muted); margin-top: 2px;
+}
+.gc-topbar-close {
+  background: none; border: none; cursor: pointer; padding: 4px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 4px;
+}
+.gc-topbar-close:focus-visible { outline: 2px solid var(--tpl-accent); outline-offset: 1px; }
+
+/* ── Shared: avatars ── */
+.gc-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'NYTKarnak', 'NYTFranklin', sans-serif; font-weight: 700;
+  font-size: 11px; color: #fff; flex-shrink: 0;
+  border: 2px solid #fff;
+  line-height: 1;
+}
+.gc-avatar--sm { width: 24px; height: 24px; font-size: 9px; }
+.gc-avatar-row {
+  display: flex; align-items: center;
+}
+.gc-avatar-row .gc-avatar { margin-left: -8px; }
+.gc-avatar-row .gc-avatar:first-child { margin-left: 0; }
+
+/* ── Shared: article card in circle feed ── */
+.gc-shared-card {
+  padding: 16px; border-bottom: 1px solid #ececec;
+  cursor: pointer; transition: background 0.12s;
+}
+.gc-shared-card:hover { background: #fafafa; }
+.gc-shared-card-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+}
+.gc-shared-card-sender {
+  font-family: 'NYTFranklin', sans-serif; font-weight: 600;
+  font-size: 13px; color: var(--ink);
+}
+.gc-shared-card-time {
+  font-family: 'NYTFranklin', sans-serif; font-weight: 500;
+  font-size: 12px; color: var(--muted);
+}
+.gc-shared-card-body {
+  display: flex; gap: 12px;
+}
+.gc-shared-card-text { flex: 1; min-width: 0; }
+.gc-shared-card-section {
+  font-family: 'NYTFranklin', sans-serif; font-weight: 700;
+  font-size: 10px; letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 4px;
+}
+.gc-shared-card-headline {
+  font-family: 'NYTCheltenham', Georgia, serif; font-weight: 400;
+  font-size: 15px; line-height: 1.25; color: #121212; margin: 0;
+}
+.gc-shared-card-thumb {
+  width: 56px; height: 56px; border-radius: 4px;
+  object-fit: cover; flex-shrink: 0;
+}
+.gc-shared-note {
+  font-family: 'NYTFranklin', sans-serif; font-weight: 500;
+  font-size: 13px; line-height: 1.35; color: #555;
+  font-style: italic; margin-top: 8px; padding-left: 10px;
+  border-left: 2px solid #e0ddd6;
+}
+.gc-reaction-row {
+  display: flex; gap: 6px; margin-top: 8px;
+}
+.gc-reaction-pill {
+  font-size: 13px; padding: 2px 8px; background: #f4f3f0;
+  border-radius: 12px; line-height: 1.4;
+}
+
+/* ── Shared: thread messages ── */
+.gc-thread-scroll {
+  flex: 1; overflow-y: auto; padding: 16px;
+  display: flex; flex-direction: column; gap: 8px;
+  -webkit-overflow-scrolling: touch;
+}
+.gc-thread-msg-row {
+  display: flex; gap: 8px; align-items: flex-start;
+  align-self: flex-start; max-width: 90%;
+}
+.gc-thread-msg-row--user {
+  align-self: flex-end; flex-direction: row-reverse;
+}
+.gc-thread-msg-avatar {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'NYTKarnak', serif; font-weight: 700; font-size: 14px;
+  line-height: 1;
+}
+.gc-thread-msg {
+  padding: 10px 14px; border-radius: 14px;
+  font-family: 'NYTFranklin', sans-serif; font-size: 13px; line-height: 1.4;
+  flex: 1; min-width: 0;
+}
+.gc-thread-msg--friend {
+  background: #f2f2f2; color: var(--ink);
+  border-bottom-left-radius: 4px;
+}
+.gc-thread-msg--user {
+  background: #e8f0f8; color: var(--ink);
+  border-bottom-right-radius: 4px;
+}
+.gc-thread-msg-name {
+  font-family: 'NYTFranklin', sans-serif; font-weight: 600;
+  font-size: 11px; color: var(--muted); margin-bottom: 3px;
+}
+.gc-thread-msg--reaction {
+  font-size: 22px; padding: 4px 8px;
+  background: none;
+}
+.gc-thread-reply-bar {
+  display: flex; gap: 8px; align-items: center;
+  padding: 10px 16px; border-top: 1px solid #e8e8e8;
+  background: #fff; flex-shrink: 0;
+}
+.gc-thread-reply-input {
+  flex: 1; border: 1px solid #d9d9d9; border-radius: 18px;
+  padding: 8px 14px; font-family: 'NYTFranklin', sans-serif;
+  font-size: 13px; outline: none; background: #fafafa;
+}
+.gc-thread-reply-input:focus { border-color: var(--tpl-accent); background: #fff; }
+.gc-thread-reply-send {
+  background: var(--tpl-accent); color: #fff; border: none;
+  border-radius: 50%; width: 32px; height: 32px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: opacity 0.12s;
+}
+.gc-thread-reply-send:hover { opacity: 0.85; }
+.gc-thread-reply-send:focus-visible { outline: 2px solid var(--tpl-accent); outline-offset: 2px; }
+
+/* ── Chat header (article card + close) ── */
+.gc-chat-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--tpl-color-stroke-tertiary, #ececec);
+  background: var(--tpl-color-background-primary, #fff); flex-shrink: 0;
+}
+.gc-chat-header .gc-topbar-close {
+  flex-shrink: 0; align-self: flex-start; margin-top: 2px;
+}
+
+/* ── Chat input bar (Figma-style, in-article chat) ── */
+.gc-chat-input-bar {
+  display: flex; gap: 8px; align-items: center;
+  padding: 16px; border-top: 1px solid var(--tpl-color-stroke-tertiary, #e8e8e8);
+  background: var(--tpl-color-background-primary, #fff); flex-shrink: 0;
+}
+.gc-chat-input-avatar {
+  width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'NYTKarnak', serif; font-weight: 700; font-size: 16px;
+  line-height: 1;
+}
+.gc-chat-input-pill {
+  flex: 1; border: none; border-radius: 100px;
+  padding: 12px 16px; font-family: 'NYTFranklin', sans-serif;
+  font-size: 14px; line-height: 1.3;
+  background: var(--tpl-color-background-secondary, #f0f0f0);
+  color: var(--tpl-color-content-primary, #333);
+  outline: none; cursor: text;
+}
+.gc-chat-input-pill::placeholder {
+  color: var(--tpl-color-content-secondary, #666);
+}
+.gc-chat-input-pill:focus {
+  background: var(--tpl-color-background-primary, #fff);
+  box-shadow: 0 0 0 1px var(--tpl-color-stroke-secondary, #ccc);
+}
+.gc-chat-input-pill:focus-visible {
+  outline: 2px solid var(--tpl-accent, #326891); outline-offset: 2px;
+}
+
+/* ── Shared: article mini card (in thread header) ── */
+.gc-article-mini {
+  display: flex; gap: 12px; padding: 12px 16px;
+  border-bottom: 1px solid #ececec; background: transparent;
+}
+.gc-article-mini-thumb {
+  width: 48px; height: 48px; border-radius: 4px;
+  object-fit: cover; flex-shrink: 0;
+}
+.gc-article-mini-text { flex: 1; min-width: 0; }
+.gc-article-mini-section {
+  font-family: 'NYTFranklin', sans-serif; font-weight: 700;
+  font-size: 10px; letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 2px;
+}
+.gc-article-mini-headline {
+  font-family: 'NYTCheltenham', Georgia, serif; font-weight: 400;
+  font-size: 14px; line-height: 1.2; color: #121212;
+  margin: 0; display: -webkit-box; -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* ━━━ In-feed circle sub-option ━━━ */
+
+/* In-feed: reuses reading-mode-topbar, reading-mode-ribbon, reading-mode-feed from "Choose how you read" */
+.gc-if-view { width: 100%; height: 100%; display: flex; flex-direction: column; overflow: hidden; background: #fff; position: relative; }
+
+/* Circle card on home */
+.gc-circle-card {
+  margin: 16px; padding: 14px 16px; background: #fff;
+  border: 1px solid #e4e2dc; border-radius: 10px;
+  display: flex; align-items: center; gap: 12px;
+  cursor: pointer; transition: background 0.12s, box-shadow 0.12s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.gc-circle-card:hover { background: #fafaf8; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+.gc-circle-card:focus-visible { outline: 2px solid var(--tpl-accent); outline-offset: 2px; }
+.gc-circle-card-info { flex: 1; }
+.gc-circle-card-label {
+  font-family: 'NYTFranklin', sans-serif; font-weight: 600;
+  font-size: 14px; color: var(--ink); line-height: 1.3;
+}
+.gc-circle-card-count {
+  font-family: 'NYTFranklin', sans-serif; font-weight: 500;
+  font-size: 12px; color: var(--tpl-color-content-primary, #121212); margin-top: 2px;
+}
+.gc-circle-card-chevron {
+  color: var(--muted); flex-shrink: 0;
+}
+
+/* Expanded circle feed */
+.gc-expanded-scroll {
+  flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+}
+.gc-expanded-share-btn {
+  display: block; width: 100%; padding: 14px 16px;
+  font-family: 'NYTFranklin', sans-serif; font-weight: 600;
+  font-size: 14px; color: var(--tpl-color-content-primary, #121212);
+  background: none; border: none; border-top: 1px solid var(--tpl-color-stroke-tertiary, #ececec);
+  cursor: pointer; text-align: center; flex-shrink: 0;
+}
+.gc-expanded-share-btn:hover { opacity: 0.7; }
+.gc-expanded-share-btn:focus-visible { outline: 2px solid var(--tpl-accent); outline-offset: 2px; }
+
+/* Share picker overlay */
+.gc-picker-overlay {
+  position: absolute; inset: 0; z-index: 20;
+  display: flex; flex-direction: column; background: #fff;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.gc-picker-overlay--open { transform: translateY(0); }
+.gc-picker-header {
+  display: flex; align-items: center; padding: 14px 16px;
+  border-bottom: 1px solid var(--tpl-color-stroke-tertiary, #ececec);
+  flex-shrink: 0;
+}
+.gc-picker-cancel {
+  width: 24px; height: 24px;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--tpl-color-content-primary, #121212);
+  background: none; border: none; cursor: pointer;
+  padding: 0;
+}
+.gc-picker-cancel:focus-visible { outline: 2px solid var(--tpl-accent); outline-offset: 2px; }
+.gc-picker-title {
+  flex: 1; text-align: center;
+  font-family: 'NYTFranklin', sans-serif; font-weight: 600; font-size: 15px;
+  color: var(--tpl-color-content-primary, #121212);
+}
+.gc-picker-header-spacer { width: 24px; }
+.gc-picker-search {
+  display: flex; align-items: center; gap: 8px;
+  margin: 12px 16px; padding: 10px 14px;
+  border-radius: 100px; background: var(--tpl-color-background-secondary, #f0f0f0);
+  flex-shrink: 0;
+}
+.gc-picker-search-icon { flex-shrink: 0; color: var(--tpl-color-content-secondary, #666); }
+.gc-picker-search-input {
+  flex: 1; border: none; background: transparent; outline: none;
+  font-family: 'NYTFranklin', sans-serif; font-size: 14px;
+  color: var(--tpl-color-content-primary, #333);
+}
+.gc-picker-search-input::placeholder { color: var(--tpl-color-content-secondary, #999); }
+.gc-picker-section-label {
+  padding: 4px 16px 8px;
+  font-family: 'NYTFranklin', sans-serif; font-weight: 700;
+  font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--tpl-color-content-secondary, #666);
+}
+.gc-picker-list {
+  flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+}
+.gc-picker-article {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; border-bottom: 1px solid var(--tpl-color-stroke-tertiary, #ececec);
+}
+.gc-picker-article-text { flex: 1; min-width: 0; }
+.gc-picker-article-kicker {
+  font-family: 'NYTFranklin', sans-serif; font-weight: 600;
+  font-size: 11px; color: var(--tpl-color-content-secondary, #666);
+}
+.gc-picker-article-title {
+  font-family: 'NYTCheltenham', Georgia, serif; font-size: 14px; line-height: 1.25;
+  color: var(--tpl-color-content-primary, #121212); margin-top: 2px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.gc-picker-article-time {
+  font-family: 'NYTFranklin', sans-serif; font-size: 11px;
+  color: var(--tpl-color-content-secondary, #999); margin-top: 3px;
+}
+.gc-picker-share-btn {
+  flex-shrink: 0;
+  width: 28px; height: 28px;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--tpl-color-content-primary, #121212);
+  background: none; border: 1px solid var(--tpl-color-stroke-secondary, #999);
+  border-radius: 999px; cursor: pointer; padding: 0;
+}
+.gc-picker-share-btn:focus-visible { outline: 2px solid var(--tpl-accent); outline-offset: 2px; }
+.gc-picker-no-results {
+  padding: 24px 16px; text-align: center;
+  font-family: 'NYTFranklin', sans-serif; font-size: 14px;
+  color: var(--tpl-color-content-secondary, #999);
+}
+.gc-picker-note-step {
+  display: none; flex-direction: column; flex: 1; padding: 16px;
+  overflow-y: auto;
+}
+.gc-picker-note-selected {
+  padding: 12px; border-radius: 8px;
+  border: 1px solid var(--tpl-color-stroke-tertiary, #ececec); margin-bottom: 16px;
+}
+.gc-picker-note-selected-section {
+  font-family: 'NYTFranklin', sans-serif; font-weight: 600;
+  font-size: 11px; color: var(--tpl-color-content-secondary, #666);
+}
+.gc-picker-note-selected-title {
+  font-family: 'NYTCheltenham', Georgia, serif; font-size: 16px; line-height: 1.25;
+  color: var(--tpl-color-content-primary, #121212); margin-top: 4px;
+}
+.gc-picker-note-label {
+  font-family: 'NYTFranklin', sans-serif; font-weight: 600;
+  font-size: 13px; color: var(--tpl-color-content-primary, #121212); margin-bottom: 8px;
+}
+.gc-picker-note-input {
+  width: 100%; border: 1px solid var(--tpl-color-stroke-secondary, #ccc);
+  border-radius: 8px; padding: 12px; font-family: 'NYTFranklin', sans-serif;
+  font-size: 14px; resize: none; outline: none; min-height: 60px;
+  box-sizing: border-box;
+}
+.gc-picker-note-input::placeholder { color: var(--tpl-color-content-secondary, #999); }
+.gc-picker-note-input:focus { border-color: var(--tpl-accent, #326891); }
+.gc-picker-confirm-btn {
+  margin-top: 16px; padding: 12px; width: 100%;
+  font-family: 'NYTFranklin', sans-serif; font-weight: 600; font-size: 14px;
+  color: #fff; background: var(--tpl-accent, #326891);
+  border: none; border-radius: 8px; cursor: pointer;
+}
+.gc-picker-confirm-btn:hover { opacity: 0.9; }
+.gc-picker-confirm-btn:focus-visible { outline: 2px solid var(--tpl-accent); outline-offset: 2px; }
+
+/* In-feed thread (article + discussion) */
+.gc-if-thread-view { width: 100%; height: 100%; display: flex; flex-direction: column; overflow: hidden; background: #fff; }
+.gc-if-thread-article {
+  flex: 0 0 auto; max-height: 45%; overflow-y: auto; padding: 16px;
+  border-bottom: 1px solid #e8e8e8; -webkit-overflow-scrolling: touch;
+}
+.gc-if-thread-article-img {
+  width: 100%; border-radius: 4px; margin-bottom: 12px;
+}
+.gc-if-thread-article-section {
+  font-family: 'NYTFranklin', sans-serif; font-weight: 700;
+  font-size: 10px; letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 6px;
+}
+.gc-if-thread-article-headline {
+  font-family: 'NYTCheltenham', Georgia, serif; font-weight: 700;
+  font-size: 20px; line-height: 1.2; color: #121212; margin: 0 0 8px;
+}
+.gc-if-thread-article-body {
+  font-family: 'NYTImperial', Georgia, serif; font-weight: 400;
+  font-size: 15px; line-height: 1.4; color: #333;
+}
+.gc-if-thread-article-byline {
+  font-family: 'NYTFranklin', sans-serif; font-weight: 500;
+  font-size: 12px; color: #666; margin-top: 8px;
+}
+.gc-if-thread-divider {
+  padding: 10px 16px; background: #f8f7f4;
+  font-family: 'NYTFranklin', sans-serif; font-weight: 600;
+  font-size: 12px; color: var(--muted); text-align: center;
+  border-bottom: 1px solid #e8e8e8; flex-shrink: 0;
+}
+
+/* ━━━ In-article chat sub-option ━━━ */
+
+.gc-sp-view { width: 100%; height: 100%; display: flex; flex-direction: column; overflow: hidden; background: #fff; position: relative; }
+
+/* Article reading view */
+.gc-sp-article-wrap {
+  flex: 1; overflow-y: auto; padding: 0; -webkit-overflow-scrolling: touch;
+  transition: opacity 0.25s;
+}
+.gc-sp-article-wrap--dimmed { opacity: 0.2; pointer-events: none; }
+
+/* Floating circle indicator */
+.gc-float-indicator {
+  position: absolute; bottom: 20px; right: 16px; z-index: 10;
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 14px 8px 8px;
+  background: #fff; border: 1px solid #e4e2dc; border-radius: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  cursor: pointer; transition: box-shadow 0.15s, background 0.12s;
+}
+.gc-float-indicator:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.18); background: #fafaf8; }
+.gc-float-indicator:focus-visible { outline: 2px solid var(--tpl-accent); outline-offset: 2px; }
+.gc-float-indicator-count {
+  font-family: 'NYTFranklin', sans-serif; font-weight: 600;
+  font-size: 13px; color: var(--tpl-color-content-primary, #121212);
+}
+.gc-float-indicator .gc-avatar { width: 26px; height: 26px; font-size: 9px; border-width: 2px; }
+.gc-float-indicator .gc-avatar-row .gc-avatar { margin-left: -6px; }
+.gc-float-indicator .gc-avatar-row .gc-avatar:first-child { margin-left: 0; }
+
+/* Slide panel overlay */
+.gc-slide-overlay {
+  position: absolute; inset: 0; z-index: 20;
+  display: flex; flex-direction: column;
+  background: #fff;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.gc-slide-overlay--open {
+  transform: translateY(0);
+}
+/* ── Step panel (outside phone) ── */
+#gc-step-panel {
+  position: absolute; right: 20px; top: 50%;
+  transform: translateY(-50%); width: 210px;
+  display: flex; flex-direction: column; gap: 8px; z-index: 20;
+}
+.gc-step-panel-title {
+  margin: 0 0 4px;
+  font-family: 'NYTFranklin', sans-serif; font-size: 12px;
+  font-weight: 600; color: #6a6a6a;
+}
+.gc-step-btn {
+  display: flex; flex-direction: column; gap: 2px;
+  width: 100%; text-align: left; cursor: pointer;
+  background: #fff; border: 1px solid #e2e2e2; border-radius: 8px;
+  padding: 10px 12px; transition: border-color 0.15s, background 0.15s;
+}
+.gc-step-btn:hover { border-color: #ccc; background: #fafafa; }
+.gc-step-btn:focus-visible { outline: 2px solid var(--tpl-accent); outline-offset: 1px; }
+.gc-step-btn--active { border-color: var(--tpl-accent); background: #f0f6fc; }
+.gc-step-btn--completed { border-color: #c3dab7; background: #f6faf4; }
+.gc-step-btn-kicker {
+  font-family: 'NYTFranklin', sans-serif; font-weight: 700;
+  font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--tpl-accent);
+}
+.gc-step-btn--completed .gc-step-btn-kicker { color: #5a8a4a; }
+.gc-step-btn-title {
+  font-family: 'NYTFranklin', sans-serif; font-weight: 600;
+  font-size: 13px; color: var(--ink); line-height: 1.3;
+}
+.gc-step-btn-caption {
+  font-family: 'NYTFranklin', sans-serif; font-weight: 500;
+  font-size: 11px; color: var(--muted); line-height: 1.3;
+}
+
+@media (max-width: 840px) {
+  #gc-step-panel { display: none; }
+}
+</style>
+
+<!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     Prototype: Group Chat — Script
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+<script>
+(function () {
+  'use strict';
+
+  /* ━━━ Mock Data ━━━ */
+
+  var IMG_ROOT = '../Article-Overview/Assets/Today-tab/Images/';
+  var IMG_ROOT_WEB = '../Article-Overview/Assets/Images/';
+
+  var FRIENDS = [
+    { name: 'Ava K.',    initials: 'AK', color: '#5b8a72' },
+    { name: 'Marcus S.', initials: 'MS', color: '#7b6ba4' },
+    { name: 'Jess L.',   initials: 'JL', color: '#c27853' },
+    { name: 'Dani P.',   initials: 'DP', color: '#4a8bad' },
+    { name: 'Raj W.',    initials: 'RW', color: '#a0785a' },
+    { name: 'Sofia M.',  initials: 'SM', color: '#b85c5c' }
+  ];
+
+  var YOU_PERSON = { name: 'Lindsey', initials: 'L' };
+
+  function friendByName(n) {
+    if (n === 'You') return YOU_PERSON;
+    for (var i = 0; i < FRIENDS.length; i++) { if (FRIENDS[i].name === n) return FRIENDS[i]; }
+    return FRIENDS[0];
+  }
+
+  var TABLE_ARTICLES = [
+    {
+      sharedBy: 'Sofia M.', timeAgo: '20 min ago', section: 'Politics',
+      title: 'White House Rushes to Preserve Tariff Power',
+      summary: 'The Trump administration has asked that it be allowed to proceed with tariffs that a federal court declared were illegal.',
+      image: IMG_ROOT + '4.png',
+      note: null, reactions: ['\uD83D\uDD25', '\uD83D\uDC40']
+    },
+    {
+      sharedBy: 'Marcus S.', timeAgo: '2 hours ago', section: 'Opinion',
+      title: 'The Real Cost of Retreating From Global Leadership',
+      summary: 'America\u2019s allies are recalculating. Its adversaries are emboldened. The consequences will outlast any single administration.',
+      image: IMG_ROOT + '5.png',
+      note: 'This is exactly what I was saying last week',
+      reactions: []
+    },
+    {
+      sharedBy: 'Ava K.', timeAgo: 'Yesterday', section: 'The Great Read',
+      title: 'He Made One Wrong Turn. ICE Detained Him for 3 Weeks.',
+      summary: 'An accidental trip over a bridge in Buffalo typically means a toll and a loss of time. But for Victor and Johanna, it carried a higher cost.',
+      image: IMG_ROOT + '1.png',
+      note: 'This one\u2019s worth your time',
+      reactions: ['\u2764\uFE0F']
+    },
+    {
+      sharedBy: 'Jess L.', timeAgo: 'Yesterday', section: 'Culture',
+      title: 'A Young Rockefeller Vanished in 1961. The Met\u2019s New Wing Celebrates His Memory.',
+      summary: 'Mary Rockefeller Morgan was determined to honor her family of collectors, and Indigenous art.',
+      image: IMG_ROOT + '3.png',
+      note: null, reactions: ['\uD83D\uDE0A', '\uD83D\uDE4C']
+    }
+  ];
+
+  var THREAD_MESSAGES = [
+    { sender: 'Marcus S.', text: 'I had no idea streaming used this much energy', isUser: false },
+    { sender: 'Ava K.',    text: 'The stat about data centers using as much power as a small city is wild', isUser: false },
+    { sender: 'Dani P.',   text: 'Makes me think twice about leaving Netflix on in the background', isUser: false },
+    { sender: 'Jess L.',   text: 'Did anyone see the related climate piece from Tuesday?', isUser: false }
+  ];
+
+  var ARTICLE_FOR_SLIDE = {
+    section: 'Technology',
+    image: IMG_ROOT + '4.png',
+    title: 'The Hidden Cost of Our Streaming Habits',
+    dek: 'Behind every binge-watched series and playlist lies a sprawling network of data centers consuming enormous amounts of energy.',
+    byline: 'Kashmir Hill',
+    date: 'March 20, 2026',
+    paragraphs: [
+      'Every time you press play on a streaming service, a chain reaction begins in a data center miles away. Servers spin up, hard drives whir, and cooling systems kick into high gear \u2014 all to deliver a few megabytes of video to your screen.',
+      'The energy consumption of these facilities has become one of the fastest-growing sources of carbon emissions in the tech industry. A single large data center can use as much electricity as a small city, running 24 hours a day, 365 days a year.',
+      'Researchers at the International Energy Agency estimate that data centers now account for roughly 1.5 percent of global electricity use \u2014 a figure that has doubled in less than a decade and shows no sign of slowing.',
+      'Much of that growth is driven by streaming. Video accounts for more than 60 percent of downstream internet traffic worldwide, and the shift to higher resolutions like 4K and 8K is pushing bandwidth demands even further.'
+    ]
+  };
+
+  var DEFAULT_FEED = [
+    { title: 'Judge Intends to Block Trump Effort to Stop Harvard From Enrolling Foreign Students', summary: 'The decision was a victory for Harvard in its ongoing confrontation with the White House, which has sought to undermine the university\u2019s finances.', readTime: '5 min read', image: IMG_ROOT + '1.png', layout: 'lead' },
+    { title: 'Harvard Says Many of Its Foreign Students Are Seeking to Transfer', readTime: '2 min read', layout: 'text-only' },
+    { topLabel: 'the daily  <span class="label-secondary">audio</span>', title: 'Harvard Is Trying to Resist Trump. It Might Not Be Working.', readTime: '29 min listen', image: IMG_ROOT + '2.png', layout: 'row-thumb-left' },
+    { liveLabel: 'Live', title: 'Frustration Grows in Israel Over Fate of Gaza Hostages', summary: 'Families and supporters have stepped up pressure on the Israeli government as negotiations drag on.', readTime: '5 min read', image: IMG_ROOT + '3.png', layout: 'large' },
+    { title: 'White House Rushes to Preserve Tariff Power', summary: 'The Trump administration has asked that it be allowed to proceed with tariffs that a federal court declared were illegal.', readTime: '5 min read', image: IMG_ROOT + '4.png', layout: 'large' },
+    { layout: 'section-header', sectionTitle: 'The Great Read' },
+    { title: 'He Made One Wrong Turn. ICE Detained Him for 3 Weeks.', summary: 'An accidental trip over a bridge in Buffalo typically means a toll and a loss of time. But for Victor and Johanna, it carried a higher cost.', readTime: '5 min read', image: IMG_ROOT + '5.png', layout: 'large' }
+  ];
+
+  var RECENTLY_READ = [
+    { section: 'U.S.', title: 'Judge Intends to Block Trump Effort to Stop Harvard From Enrolling Foreign Students', readTime: '5 min read', image: IMG_ROOT + '1.png' },
+    { section: 'Technology', title: 'The Hidden Cost of Our Streaming Habits', readTime: '8 min read', image: IMG_ROOT + '4.png' },
+    { section: 'World', title: 'Frustration Grows in Israel Over Fate of Gaza Hostages', readTime: '5 min read', image: IMG_ROOT + '3.png' },
+    { section: 'Business', title: 'White House Rushes to Preserve Tariff Power', readTime: '5 min read', image: IMG_ROOT + '4.png' },
+    { section: 'The Great Read', title: 'He Made One Wrong Turn. ICE Detained Him for 3 Weeks.', readTime: '5 min read', image: IMG_ROOT + '5.png' }
+  ];
+
+  var RIBBON_SECTIONS = ['Games', 'Audio', 'Wirecutter', 'Cooking', 'The Athletic', 'Today', 'Best of 2024', 'Lifestyle'];
+
+  /* ━━━ Per-mount state ━━━ */
+
+  var listeners = [];
+  var panelsById = {};
+  var activeEntry = 'in-feed';
+  var stepPanelEl = null;
+  var avatarTokens = window.__nytSocialAvatar;
+
+  /* In-feed state */
+  var ifState = 'home';
+  var ifViewEl = null;
+  var ifHomeEl = null;
+  var ifExpandedEl = null;
+  var ifThreadEl = null;
+  var ifPickerEl = null;
+  var ifExpScrollEl = null;
+  var ifStepBtns = [];
+
+  /* In-article chat state */
+  var spState = 'article';
+  var spViewEl = null;
+  var spArticleWrap = null;
+  var spOverlay = null;
+  var spFloatBtn = null;
+  var spChatContainer = null;
+  var spStepBtns = [];
+
+  function on(el, evt, fn) {
+    el.addEventListener(evt, fn, false);
+    listeners.push({ el: el, evt: evt, fn: fn });
+  }
+
+  /* ━━━ Shared builders ━━━ */
+
+  var BACK_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var CLOSE_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var CHEVRON_SVG = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var SEND_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M22 2l-7 20-4-9-9-4 20-7z" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  function applySocialAvatar(el, person, opts) {
+    if (!el) return;
+    if (avatarTokens && avatarTokens.applyAvatar) {
+      avatarTokens.applyAvatar(el, person, opts);
+      return;
+    }
+    var fallbackName = person && person.name ? String(person.name).trim() : '';
+    var fallbackInitials = person && person.initials ? String(person.initials).trim() : '';
+    var char = (fallbackName || fallbackInitials || '?').charAt(0).toUpperCase();
+    el.textContent = char;
+  }
+
+  function buildAvatar(friend, extraClass) {
+    var el = document.createElement('div');
+    el.className = 'gc-avatar' + (extraClass ? ' ' + extraClass : '');
+    applySocialAvatar(el, friend);
+    return el;
+  }
+
+  function buildAvatarRow(friends, max, extraAvatarClass) {
+    var row = document.createElement('div');
+    row.className = 'gc-avatar-row';
+    var count = Math.min(friends.length, max || friends.length);
+    for (var i = 0; i < count; i++) {
+      row.appendChild(buildAvatar(friends[i], extraAvatarClass));
+    }
+    return row;
+  }
+
+  function buildSharedCard(article, onClick) {
+    var card = document.createElement('div');
+    card.className = 'gc-shared-card';
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+
+    var friend = friendByName(article.sharedBy);
+    var displayName = article.sharedBy === 'You' ? 'You' : friend.name;
+    var header = document.createElement('div');
+    header.className = 'gc-shared-card-header';
+    header.appendChild(buildAvatar(friend));
+    var nameTime = document.createElement('div');
+    nameTime.innerHTML =
+      '<div class="gc-shared-card-sender">' + displayName + '</div>' +
+      '<div class="gc-shared-card-time">' + article.timeAgo + '</div>';
+    header.appendChild(nameTime);
+    card.appendChild(header);
+
+    var body = document.createElement('div');
+    body.className = 'gc-shared-card-body';
+    var textCol = document.createElement('div');
+    textCol.className = 'gc-shared-card-text';
+    textCol.innerHTML =
+      '<div class="gc-shared-card-section">' + article.section + '</div>' +
+      '<h3 class="gc-shared-card-headline">' + article.title + '</h3>';
+    body.appendChild(textCol);
+    var thumb = document.createElement('img');
+    thumb.className = 'gc-shared-card-thumb';
+    thumb.src = article.image;
+    thumb.alt = '';
+    body.appendChild(thumb);
+    card.appendChild(body);
+
+    if (article.note) {
+      var note = document.createElement('p');
+      note.className = 'gc-shared-note';
+      note.textContent = '\u201C' + article.note + '\u201D';
+      card.appendChild(note);
+    }
+
+    if (article.reactions && article.reactions.length) {
+      var rr = document.createElement('div');
+      rr.className = 'gc-reaction-row';
+      for (var r = 0; r < article.reactions.length; r++) {
+        var pill = document.createElement('span');
+        pill.className = 'gc-reaction-pill';
+        pill.textContent = article.reactions[r];
+        rr.appendChild(pill);
+      }
+      card.appendChild(rr);
+    }
+
+    if (onClick) {
+      on(card, 'click', onClick);
+      on(card, 'keydown', function (e) { if (e.key === 'Enter') onClick(); });
+    }
+    return card;
+  }
+
+  function buildThreadMessages(container) {
+    for (var i = 0; i < THREAD_MESSAGES.length; i++) {
+      var m = THREAD_MESSAGES[i];
+      var row = document.createElement('div');
+      row.className = 'gc-thread-msg-row' + (m.isUser ? ' gc-thread-msg-row--user' : '');
+
+      var av = document.createElement('div');
+      av.className = 'gc-thread-msg-avatar';
+      applySocialAvatar(av, { name: m.isUser ? 'Lindsey' : m.sender });
+      row.appendChild(av);
+
+      var bubble = document.createElement('div');
+      if (m.isReaction) {
+        bubble.className = 'gc-thread-msg gc-thread-msg--reaction';
+        var nameR = document.createElement('p');
+        nameR.className = 'gc-thread-msg-name';
+        nameR.textContent = m.sender;
+        bubble.appendChild(nameR);
+        var emojiSpan = document.createElement('span');
+        emojiSpan.textContent = m.text;
+        bubble.appendChild(emojiSpan);
+      } else {
+        bubble.className = 'gc-thread-msg' + (m.isUser ? ' gc-thread-msg--user' : ' gc-thread-msg--friend');
+        var nameP = document.createElement('p');
+        nameP.className = 'gc-thread-msg-name';
+        nameP.textContent = m.isUser ? 'You' : m.sender;
+        bubble.appendChild(nameP);
+        var textP = document.createElement('span');
+        textP.textContent = m.text;
+        bubble.appendChild(textP);
+      }
+      row.appendChild(bubble);
+      container.appendChild(row);
+    }
+  }
+
+  function buildReplyBar() {
+    var bar = document.createElement('div');
+    bar.className = 'gc-thread-reply-bar';
+    var input = document.createElement('input');
+    input.className = 'gc-thread-reply-input';
+    input.type = 'text';
+    input.placeholder = 'Add to the conversation\u2026';
+    input.setAttribute('aria-label', 'Reply message');
+    bar.appendChild(input);
+    var send = document.createElement('button');
+    send.type = 'button';
+    send.className = 'gc-thread-reply-send';
+    send.setAttribute('aria-label', 'Send');
+    send.innerHTML = SEND_SVG;
+    bar.appendChild(send);
+    return bar;
+  }
+
+  function buildChatInputBar() {
+    var bar = document.createElement('div');
+    bar.className = 'gc-chat-input-bar';
+    var avatar = document.createElement('div');
+    avatar.className = 'gc-chat-input-avatar';
+    applySocialAvatar(avatar, { name: 'Lindsey' });
+    bar.appendChild(avatar);
+    var pill = document.createElement('input');
+    pill.className = 'gc-chat-input-pill';
+    pill.type = 'text';
+    pill.placeholder = 'Add a comment';
+    pill.setAttribute('aria-label', 'Add a comment');
+    bar.appendChild(pill);
+    return bar;
+  }
+
+  function buildArticleMini(article) {
+    var mini = document.createElement('div');
+    mini.className = 'gc-article-mini';
+    var img = document.createElement('img');
+    img.className = 'gc-article-mini-thumb';
+    img.src = article.image;
+    img.alt = '';
+    mini.appendChild(img);
+    var text = document.createElement('div');
+    text.className = 'gc-article-mini-text';
+    text.innerHTML =
+      '<div class="gc-article-mini-section">' + article.section + '</div>' +
+      '<h4 class="gc-article-mini-headline">' + article.title + '</h4>';
+    mini.appendChild(text);
+    return mini;
+  }
+
+  /* ━━━ Local reading-mode helpers (copied from "Choose how you read") ━━━ */
+
+  function gcBuildTopbar() {
+    var bar = document.createElement('div');
+    bar.className = 'reading-mode-topbar';
+    bar.innerHTML =
+      '<button type="button" class="reading-mode-icon-btn" aria-label="Menu">' +
+        '<svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M0 1h16M0 6h16M0 11h16" stroke="#121212" stroke-width="1.4"/></svg>' +
+      '</button>' +
+      '<img class="reading-mode-logo" src="../Article-Overview/Assets/NYT-logo.svg" alt="The New York Times" />' +
+      '<button type="button" class="reading-mode-icon-btn" aria-label="Search">' +
+        '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="#121212" stroke-width="1.3"/><path d="M10.5 10.5L14 14" stroke="#121212" stroke-width="1.3" stroke-linecap="round"/></svg>' +
+      '</button>';
+    return bar;
+  }
+
+  function gcBuildRibbon() {
+    var ribbon = document.createElement('div');
+    ribbon.className = 'reading-mode-ribbon';
+    var track = document.createElement('div');
+    track.className = 'reading-mode-ribbon-track';
+    for (var i = 0; i < RIBBON_SECTIONS.length; i++) {
+      var item = document.createElement('span');
+      item.className = 'reading-mode-ribbon-item';
+      if (RIBBON_SECTIONS[i] === 'Today') item.className += ' reading-mode-ribbon-item--active';
+      item.textContent = RIBBON_SECTIONS[i];
+      track.appendChild(item);
+    }
+    ribbon.appendChild(track);
+    setTimeout(function () {
+      var active = ribbon.querySelector('.reading-mode-ribbon-item--active');
+      if (active) {
+        ribbon.scrollLeft = active.offsetLeft - (ribbon.offsetWidth / 2) + (active.offsetWidth / 2);
+      }
+    }, 0);
+    return ribbon;
+  }
+
+  function gcBuildBottomNav() {
+    var nav = document.createElement('nav');
+    nav.className = 'reading-mode-bottom-nav';
+    nav.setAttribute('aria-label', 'Primary');
+    var tabs = [
+      { label: 'Home', icon: '../Article-Overview/Assets/Today-tab/Icons/home.svg', active: true },
+      { label: 'Watch', icon: '../Article-Overview/Assets/Today-tab/Icons/watch.svg' },
+      { label: 'Listen', icon: '../Article-Overview/Assets/Today-tab/Icons/Listen.svg' },
+      { label: 'Play', icon: '../Article-Overview/Assets/Today-tab/Icons/play.svg' },
+      { label: 'You', icon: '../Article-Overview/Assets/Today-tab/Icons/you.svg' }
+    ];
+    for (var i = 0; i < tabs.length; i++) {
+      var t = tabs[i];
+      var btn = document.createElement('button');
+      btn.className = 'reading-mode-tab-item';
+      if (t.active) btn.className += ' reading-mode-tab-item--active';
+      btn.innerHTML = '<img class="reading-mode-tab-icon" src="' + t.icon + '" alt="" aria-hidden="true" /><span>' + t.label + '</span>';
+      nav.appendChild(btn);
+    }
+    return nav;
+  }
+
+  function gcBuildStoryContent(story, headlineClass, showSummary) {
+    var content = document.createElement('div');
+    content.className = 'reading-mode-story-content';
+    if (story.liveLabel) {
+      var live = document.createElement('p');
+      live.className = 'reading-mode-live-label';
+      live.textContent = story.liveLabel;
+      content.appendChild(live);
+    }
+    if (story.kicker) {
+      var label = document.createElement('p');
+      label.className = 'reading-mode-top-label';
+      label.textContent = story.kicker;
+      content.appendChild(label);
+    }
+    if (story.topLabel) {
+      var topLbl = document.createElement('p');
+      topLbl.className = 'reading-mode-top-label';
+      topLbl.innerHTML = story.topLabel;
+      content.appendChild(topLbl);
+    }
+    if (story.reason) {
+      var reason = document.createElement('p');
+      reason.className = 'reading-mode-reason';
+      reason.textContent = story.reason;
+      content.appendChild(reason);
+    }
+    var headline = document.createElement('h3');
+    headline.className = headlineClass;
+    headline.textContent = story.title;
+    content.appendChild(headline);
+    if (showSummary && story.summary) {
+      var summary = document.createElement('p');
+      summary.className = 'reading-mode-summary';
+      summary.textContent = story.summary;
+      content.appendChild(summary);
+    }
+    if (story.readTime) {
+      var meta = document.createElement('p');
+      meta.className = 'reading-mode-meta';
+      meta.textContent = story.readTime;
+      content.appendChild(meta);
+    }
+    return content;
+  }
+
+  function gcRenderDefaultFeed(container) {
+    var feed = document.createElement('div');
+    feed.className = 'reading-mode-feed';
+    var stories = DEFAULT_FEED;
+    for (var i = 0; i < stories.length; i++) {
+      var s = stories[i];
+      if (s.layout === 'section-header') {
+        var header = document.createElement('div');
+        header.className = 'reading-mode-section-header';
+        header.innerHTML =
+          '<div class="reading-mode-section-header-inner">' +
+            '<div class="reading-mode-section-rule"></div>' +
+            '<h3 class="reading-mode-section-title">' + s.sectionTitle + '</h3>' +
+          '</div>';
+        feed.appendChild(header);
+        continue;
+      }
+      var item = document.createElement('div');
+      item.className = 'reading-mode-story';
+      if (i > 0 && stories[i - 1].layout !== 'section-header') {
+        var rule = document.createElement('div');
+        rule.className = 'reading-mode-story-rule';
+        item.appendChild(rule);
+      }
+      var body = document.createElement('div');
+      body.className = 'reading-mode-story-body';
+      if (s.layout === 'lead') {
+        var media = document.createElement('div');
+        media.className = 'reading-mode-story-content-media';
+        var c1 = gcBuildStoryContent(s, 'reading-mode-headline-lead', true);
+        media.appendChild(c1);
+        var img = document.createElement('img');
+        img.className = 'reading-mode-story-image';
+        img.src = s.image; img.alt = s.title;
+        media.appendChild(img);
+        body.appendChild(media);
+      } else if (s.layout === 'large') {
+        var media2 = document.createElement('div');
+        media2.className = 'reading-mode-story-content-media';
+        var c2 = gcBuildStoryContent(s, 'reading-mode-headline-large', true);
+        media2.appendChild(c2);
+        var img2 = document.createElement('img');
+        img2.className = 'reading-mode-story-image';
+        img2.src = s.image; img2.alt = s.title;
+        media2.appendChild(img2);
+        body.appendChild(media2);
+      } else if (s.layout === 'row-thumb-left') {
+        var row = document.createElement('div');
+        row.className = 'reading-mode-story-row';
+        var thumb = document.createElement('img');
+        thumb.className = 'reading-mode-thumb';
+        thumb.src = s.image; thumb.alt = s.title;
+        row.appendChild(thumb);
+        var c3 = gcBuildStoryContent(s, 'reading-mode-headline-standard', false);
+        row.appendChild(c3);
+        body.appendChild(row);
+      } else if (s.layout === 'text-only') {
+        var c4 = gcBuildStoryContent(s, 'reading-mode-headline-standard', false);
+        body.appendChild(c4);
+      } else if (s.layout === 'standard-thumb') {
+        var row2 = document.createElement('div');
+        row2.className = 'reading-mode-story-row';
+        var c5 = gcBuildStoryContent(s, 'reading-mode-headline-standard', false);
+        row2.appendChild(c5);
+        var thumb2 = document.createElement('img');
+        thumb2.className = 'reading-mode-thumb';
+        thumb2.src = s.image; thumb2.alt = s.title;
+        row2.appendChild(thumb2);
+        body.appendChild(row2);
+      } else {
+        var c6 = gcBuildStoryContent(s, 'reading-mode-headline-standard', true);
+        body.appendChild(c6);
+      }
+      item.appendChild(body);
+      feed.appendChild(item);
+    }
+    container.appendChild(feed);
+  }
+
+  /* ━━━ In-feed circle ━━━ */
+
+  function setIfState(state) {
+    ifState = state;
+    if (ifHomeEl) ifHomeEl.style.display = state === 'home' ? 'flex' : 'none';
+    if (ifExpandedEl) ifExpandedEl.style.display = (state === 'expanded' || state === 'picker') ? 'flex' : 'none';
+    if (ifThreadEl) ifThreadEl.style.display = state === 'thread' ? 'flex' : 'none';
+    if (ifPickerEl) ifPickerEl.classList.toggle('gc-picker-overlay--open', state === 'picker');
+    updateIfSteps();
+  }
+
+  function updateIfSteps() {
+    var idx = ifState === 'home' ? 0 : ifState === 'expanded' ? 1 : 2;
+    for (var i = 0; i < ifStepBtns.length; i++) {
+      ifStepBtns[i].classList.remove('gc-step-btn--active', 'gc-step-btn--completed');
+      if (i === idx) ifStepBtns[i].classList.add('gc-step-btn--active');
+      else if (i < idx) ifStepBtns[i].classList.add('gc-step-btn--completed');
+    }
+  }
+
+  function renderInFeedPanel(container) {
+    ifViewEl = document.createElement('div');
+    ifViewEl.className = 'gc-if-view';
+
+    /* ── State 1: Home feed (uses reading-mode patterns) ── */
+    ifHomeEl = document.createElement('div');
+    ifHomeEl.className = 'gc-if-view';
+    ifHomeEl.style.display = 'flex';
+
+    ifHomeEl.appendChild(gcBuildTopbar());
+    ifHomeEl.appendChild(gcBuildRibbon());
+
+    var scroll = document.createElement('div');
+    scroll.style.cssText = 'flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;';
+
+    var circleCard = document.createElement('div');
+    circleCard.className = 'gc-circle-card';
+    circleCard.setAttribute('role', 'button');
+    circleCard.setAttribute('tabindex', '0');
+    circleCard.setAttribute('aria-label', 'Your circle \u2014 4 new shares');
+    circleCard.appendChild(buildAvatarRow(FRIENDS, 6));
+    var cardInfo = document.createElement('div');
+    cardInfo.className = 'gc-circle-card-info';
+    cardInfo.innerHTML =
+      '<div class="gc-circle-card-label">Your circle</div>' +
+      '<div class="gc-circle-card-count">4 new shares</div>';
+    circleCard.appendChild(cardInfo);
+    var chevWrap = document.createElement('span');
+    chevWrap.className = 'gc-circle-card-chevron';
+    chevWrap.innerHTML = CHEVRON_SVG;
+    circleCard.appendChild(chevWrap);
+    on(circleCard, 'click', function () { setIfState('expanded'); });
+    on(circleCard, 'keydown', function (e) { if (e.key === 'Enter') setIfState('expanded'); });
+    scroll.appendChild(circleCard);
+
+    gcRenderDefaultFeed(scroll);
+
+    ifHomeEl.appendChild(scroll);
+    ifHomeEl.appendChild(gcBuildBottomNav());
+    ifViewEl.appendChild(ifHomeEl);
+
+    /* ── State 2: Expanded circle feed ── */
+    ifExpandedEl = document.createElement('div');
+    ifExpandedEl.className = 'gc-if-view';
+    ifExpandedEl.style.display = 'none';
+
+    var expBar = document.createElement('div');
+    expBar.className = 'gc-topbar';
+    var expBack = document.createElement('button');
+    expBack.type = 'button';
+    expBack.className = 'gc-topbar-back';
+    expBack.setAttribute('aria-label', 'Back');
+    expBack.innerHTML = BACK_SVG;
+    on(expBack, 'click', function () { setIfState('home'); });
+    expBar.appendChild(expBack);
+    var expTitleWrap = document.createElement('div');
+    expTitleWrap.style.flex = '1';
+    expTitleWrap.innerHTML =
+      '<div class="gc-topbar-title">Your circle</div>' +
+      '<div class="gc-topbar-subtitle">6 members</div>';
+    expBar.appendChild(expTitleWrap);
+    var expMembers = buildAvatarRow(FRIENDS, 6, 'gc-avatar--sm');
+    expMembers.setAttribute('aria-hidden', 'true');
+    expBar.appendChild(expMembers);
+    ifExpandedEl.appendChild(expBar);
+
+    ifExpScrollEl = document.createElement('div');
+    ifExpScrollEl.className = 'gc-expanded-scroll';
+    for (var a = 0; a < TABLE_ARTICLES.length; a++) {
+      ifExpScrollEl.appendChild(buildSharedCard(TABLE_ARTICLES[a], (function (idx) {
+        return function () { setIfState('thread'); };
+      })(a)));
+    }
+    ifExpandedEl.appendChild(ifExpScrollEl);
+
+    var shareBtn = document.createElement('button');
+    shareBtn.type = 'button';
+    shareBtn.className = 'gc-expanded-share-btn';
+    shareBtn.textContent = '+ Share an article';
+    on(shareBtn, 'click', function () { openPicker(); });
+    ifExpandedEl.appendChild(shareBtn);
+
+    /* ── Share picker overlay ── */
+    ifPickerEl = document.createElement('div');
+    ifPickerEl.className = 'gc-picker-overlay';
+
+    var pickerListView = document.createElement('div');
+    pickerListView.style.cssText = 'display:flex;flex-direction:column;height:100%;';
+
+    var pickerNoteView = document.createElement('div');
+    pickerNoteView.className = 'gc-picker-note-step';
+
+    var pickerSelectedArticle = null;
+
+    /* Picker header */
+    var pkHeader = document.createElement('div');
+    pkHeader.className = 'gc-picker-header';
+    var pkCancel = document.createElement('button');
+    pkCancel.type = 'button';
+    pkCancel.className = 'gc-picker-cancel';
+    pkCancel.setAttribute('aria-label', 'Back');
+    pkCancel.innerHTML = '<svg width="8" height="13" viewBox="0 0 8 13" fill="none" aria-hidden="true"><path d="M7 1L1 6.5 7 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    on(pkCancel, 'click', function () { closePicker(); });
+    pkHeader.appendChild(pkCancel);
+    var pkTitle = document.createElement('div');
+    pkTitle.className = 'gc-picker-title';
+    pkTitle.textContent = 'Share with your circle';
+    pkHeader.appendChild(pkTitle);
+    var pkSpacer = document.createElement('div');
+    pkSpacer.className = 'gc-picker-header-spacer';
+    pkHeader.appendChild(pkSpacer);
+    pickerListView.appendChild(pkHeader);
+
+    /* Search bar */
+    var pkSearch = document.createElement('div');
+    pkSearch.className = 'gc-picker-search';
+    pkSearch.innerHTML = '<svg class="gc-picker-search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.3"/><path d="M10.5 10.5L15 15" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>';
+    var pkSearchInput = document.createElement('input');
+    pkSearchInput.className = 'gc-picker-search-input';
+    pkSearchInput.type = 'text';
+    pkSearchInput.placeholder = 'Search articles\u2026';
+    pkSearchInput.setAttribute('aria-label', 'Search articles');
+    pkSearch.appendChild(pkSearchInput);
+    pickerListView.appendChild(pkSearch);
+
+    /* Section label */
+    var pkLabel = document.createElement('div');
+    pkLabel.className = 'gc-picker-section-label';
+    pkLabel.textContent = 'Recently read';
+    pickerListView.appendChild(pkLabel);
+
+    /* Article list */
+    var pkList = document.createElement('div');
+    pkList.className = 'gc-picker-list';
+
+    function renderPickerArticles(filter) {
+      pkList.innerHTML = '';
+      var lowerFilter = (filter || '').toLowerCase();
+      var count = 0;
+      for (var r = 0; r < RECENTLY_READ.length; r++) {
+        var art = RECENTLY_READ[r];
+        if (lowerFilter && art.title.toLowerCase().indexOf(lowerFilter) === -1) continue;
+        count++;
+        var row = document.createElement('div');
+        row.className = 'gc-picker-article';
+        var textCol = document.createElement('div');
+        textCol.className = 'gc-picker-article-text';
+        textCol.innerHTML =
+          '<div class="gc-picker-article-kicker">' + art.section + '</div>' +
+          '<div class="gc-picker-article-title">' + art.title + '</div>' +
+          '<div class="gc-picker-article-time">' + art.readTime + '</div>';
+        row.appendChild(textCol);
+        var shareRowBtn = document.createElement('button');
+        shareRowBtn.type = 'button';
+        shareRowBtn.className = 'gc-picker-share-btn';
+        shareRowBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M14 7l-4-4-4 4M10 3v10M4 10v5.5a1.5 1.5 0 001.5 1.5h9a1.5 1.5 0 001.5-1.5V10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        shareRowBtn.setAttribute('aria-label', 'Share: ' + art.title);
+        (function (article) {
+          on(shareRowBtn, 'click', function () { showNoteStep(article); });
+        })(art);
+        row.appendChild(shareRowBtn);
+        pkList.appendChild(row);
+      }
+      if (count === 0) {
+        var noRes = document.createElement('div');
+        noRes.className = 'gc-picker-no-results';
+        noRes.textContent = 'No matching articles';
+        pkList.appendChild(noRes);
+      }
+    }
+    renderPickerArticles('');
+    pickerListView.appendChild(pkList);
+
+    /* Search filter wiring */
+    on(pkSearchInput, 'input', function () {
+      renderPickerArticles(pkSearchInput.value);
+    });
+
+    ifPickerEl.appendChild(pickerListView);
+
+    /* Note step */
+    var noteHeader = document.createElement('div');
+    noteHeader.className = 'gc-picker-header';
+    var noteBack = document.createElement('button');
+    noteBack.type = 'button';
+    noteBack.className = 'gc-picker-cancel';
+    noteBack.setAttribute('aria-label', 'Back');
+    noteBack.innerHTML = '<svg width="8" height="13" viewBox="0 0 8 13" fill="none" aria-hidden="true"><path d="M7 1L1 6.5 7 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    on(noteBack, 'click', function () {
+      pickerNoteView.style.display = 'none';
+      pickerListView.style.display = 'flex';
+    });
+    noteHeader.appendChild(noteBack);
+    var noteTitle = document.createElement('div');
+    noteTitle.className = 'gc-picker-title';
+    noteTitle.textContent = 'Add a note';
+    noteHeader.appendChild(noteTitle);
+    var noteSpacer = document.createElement('div');
+    noteSpacer.className = 'gc-picker-header-spacer';
+    noteHeader.appendChild(noteSpacer);
+    pickerNoteView.appendChild(noteHeader);
+
+    var noteSelectedCard = document.createElement('div');
+    noteSelectedCard.className = 'gc-picker-note-selected';
+    pickerNoteView.appendChild(noteSelectedCard);
+
+    var noteLabel = document.createElement('div');
+    noteLabel.className = 'gc-picker-note-label';
+    noteLabel.textContent = 'Add a note (optional)';
+    pickerNoteView.appendChild(noteLabel);
+
+    var noteInput = document.createElement('textarea');
+    noteInput.className = 'gc-picker-note-input';
+    noteInput.placeholder = 'What do you want to say about this article\u2026';
+    noteInput.setAttribute('aria-label', 'Add a note');
+    pickerNoteView.appendChild(noteInput);
+
+    var noteConfirm = document.createElement('button');
+    noteConfirm.type = 'button';
+    noteConfirm.className = 'gc-picker-confirm-btn';
+    noteConfirm.textContent = 'Share with your circle';
+    pickerNoteView.appendChild(noteConfirm);
+
+    ifPickerEl.appendChild(pickerNoteView);
+
+    function openPicker() {
+      pkSearchInput.value = '';
+      renderPickerArticles('');
+      pickerListView.style.display = 'flex';
+      pickerNoteView.style.display = 'none';
+      noteInput.value = '';
+      setIfState('picker');
+    }
+
+    function closePicker() {
+      setIfState('expanded');
+    }
+
+    function showNoteStep(article) {
+      pickerSelectedArticle = article;
+      noteSelectedCard.innerHTML =
+        '<div class="gc-picker-note-selected-section">' + article.section + '</div>' +
+        '<div class="gc-picker-note-selected-title">' + article.title + '</div>';
+      noteInput.value = '';
+      pickerListView.style.display = 'none';
+      pickerNoteView.style.display = 'flex';
+    }
+
+    on(noteConfirm, 'click', function () {
+      if (!pickerSelectedArticle) return;
+      var userNote = noteInput.value.trim();
+      var newArticle = {
+        sharedBy: 'You',
+        timeAgo: 'Just now',
+        section: pickerSelectedArticle.section,
+        title: pickerSelectedArticle.title,
+        summary: '',
+        image: pickerSelectedArticle.image || IMG_ROOT + '1.png',
+        note: userNote || null,
+        reactions: []
+      };
+      var newCard = buildSharedCard(newArticle, function () { setIfState('thread'); });
+      ifExpScrollEl.insertBefore(newCard, ifExpScrollEl.firstChild);
+      closePicker();
+    });
+
+    ifExpandedEl.appendChild(ifPickerEl);
+
+    ifViewEl.appendChild(ifExpandedEl);
+
+    /* ── State 3: Article + thread ── */
+    ifThreadEl = document.createElement('div');
+    ifThreadEl.className = 'gc-if-thread-view';
+    ifThreadEl.style.display = 'none';
+
+    var thBar = document.createElement('div');
+    thBar.className = 'gc-topbar';
+    var thBack = document.createElement('button');
+    thBack.type = 'button';
+    thBack.className = 'gc-topbar-back';
+    thBack.setAttribute('aria-label', 'Back');
+    thBack.innerHTML = BACK_SVG;
+    on(thBack, 'click', function () { setIfState('expanded'); });
+    thBar.appendChild(thBack);
+    var thTitle = document.createElement('div');
+    thTitle.className = 'gc-topbar-title';
+    thTitle.textContent = 'Discussion';
+    thBar.appendChild(thTitle);
+    ifThreadEl.appendChild(thBar);
+
+    var threadArticle = TABLE_ARTICLES[1];
+    var articlePreview = document.createElement('div');
+    articlePreview.className = 'gc-if-thread-article';
+    articlePreview.innerHTML =
+      '<img class="gc-if-thread-article-img" src="' + threadArticle.image + '" alt="" />' +
+      '<p class="gc-if-thread-article-section">' + threadArticle.section + '</p>' +
+      '<h2 class="gc-if-thread-article-headline">' + threadArticle.title + '</h2>' +
+      '<p class="gc-if-thread-article-body">' + threadArticle.summary + '</p>' +
+      '<p class="gc-if-thread-article-byline">By Opinion Columnist</p>';
+    ifThreadEl.appendChild(articlePreview);
+
+    var divider = document.createElement('div');
+    divider.className = 'gc-if-thread-divider';
+    divider.textContent = '4 in your circle discussed this';
+    ifThreadEl.appendChild(divider);
+
+    var threadScroll = document.createElement('div');
+    threadScroll.className = 'gc-thread-scroll';
+    buildThreadMessages(threadScroll);
+    ifThreadEl.appendChild(threadScroll);
+
+    ifThreadEl.appendChild(buildReplyBar());
+
+    ifViewEl.appendChild(ifThreadEl);
+
+    container.appendChild(ifViewEl);
+  }
+
+  /* ━━━ In-article chat ━━━ */
+
+  function setSpState(state) {
+    spState = state;
+    if (spArticleWrap) {
+      spArticleWrap.classList.toggle('gc-sp-article-wrap--dimmed', state !== 'article');
+    }
+    if (spFloatBtn) {
+      spFloatBtn.style.display = state === 'article' ? 'flex' : 'none';
+    }
+    if (spOverlay) {
+      spOverlay.classList.toggle('gc-slide-overlay--open', state === 'chat');
+    }
+    if (spChatContainer) {
+      spChatContainer.style.display = (state === 'chat') ? 'flex' : 'none';
+    }
+    updateSpSteps();
+  }
+
+  function updateSpSteps() {
+    var idx = spState === 'article' ? 0 : 1;
+    for (var i = 0; i < spStepBtns.length; i++) {
+      spStepBtns[i].classList.remove('gc-step-btn--active', 'gc-step-btn--completed');
+      if (i === idx) spStepBtns[i].classList.add('gc-step-btn--active');
+      else if (i < idx) spStepBtns[i].classList.add('gc-step-btn--completed');
+    }
+  }
+
+  function renderSlidePanelPanel(container) {
+    spViewEl = document.createElement('div');
+    spViewEl.className = 'gc-sp-view';
+
+    /* ── Nav bar (Reader chat pattern) ── */
+    var nav = document.createElement('nav');
+    nav.className = 'nyt-nav';
+    nav.innerHTML =
+      '<button type="button" class="nyt-nav-back-btn" aria-label="Back" hidden>' +
+        '<svg width="8" height="13" viewBox="0 0 8 13" fill="none" aria-hidden="true"><path d="M7 1L1 6.5 7 12" stroke="#326891" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+        '<span>Back</span>' +
+      '</button>' +
+      '<button type="button" aria-label="Menu">' +
+        '<svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M0 1h16M0 6h16M0 11h16" stroke="#121212" stroke-width="1.4"/></svg>' +
+      '</button>' +
+      '<img class="nyt-logo-img" src="../Article-Overview/Assets/NYT-logo.svg" alt="The New York Times" />' +
+      '<button type="button" aria-label="Account">' +
+        '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="#121212" stroke-width="1.2"/><path d="M2.5 15.5c0-3 2.5-5.5 5.5-5.5s5.5 2.5 5.5 5.5" stroke="#121212" stroke-width="1.2" stroke-linecap="round"/></svg>' +
+      '</button>';
+    spViewEl.appendChild(nav);
+
+    /* ── Article reading area (Reader chat pattern) ── */
+    spArticleWrap = document.createElement('div');
+    spArticleWrap.className = 'gc-sp-article-wrap';
+
+    var artWrap = document.createElement('div');
+    artWrap.className = 'article-wrap';
+
+    var kickerRow = document.createElement('div');
+    kickerRow.className = 'inline-chat-kicker-row';
+    kickerRow.innerHTML = '<span class="inline-chat-section-kicker">' + ARTICLE_FOR_SLIDE.section + '</span>';
+    artWrap.appendChild(kickerRow);
+
+    var h1 = document.createElement('h1');
+    h1.className = 'article-headline';
+    h1.textContent = ARTICLE_FOR_SLIDE.title;
+    artWrap.appendChild(h1);
+
+    var dek = document.createElement('p');
+    dek.className = 'article-dek';
+    dek.textContent = ARTICLE_FOR_SLIDE.dek;
+    artWrap.appendChild(dek);
+
+    var listenRow = document.createElement('div');
+    listenRow.className = 'listen-row';
+    listenRow.innerHTML =
+      '<button type="button" class="listen-btn" aria-label="Listen to article">' +
+        '<svg viewBox="0 0 30 30" fill="none" aria-hidden="true"><circle cx="15" cy="15" r="13.5" stroke="#dfdfdf" stroke-width="1.2"/><polygon points="12,9.5 12,20.5 22,15" fill="#121212"/></svg>' +
+        '<span class="listen-text">Listen <b>&middot;</b> 8:42 min</span>' +
+      '</button>';
+    artWrap.appendChild(listenRow);
+
+    var utilRow = document.createElement('div');
+    utilRow.className = 'util-row';
+    utilRow.innerHTML =
+      '<button type="button" class="util-pill">' +
+        '<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="3" y="8" width="14" height="9" rx="1" stroke="#121212" stroke-width="1.2"/><path d="M10 8v9M3 12h14M7 8c0-2 1.5-4 3-4s3 2 3 4" stroke="#121212" stroke-width="1.2" stroke-linecap="round"/></svg>' +
+        'Share full article' +
+      '</button>' +
+      '<button type="button" class="util-pill icon-only" aria-label="Share">' +
+        '<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M14 7l-4-4-4 4M10 3v10M4 10v5.5a1.5 1.5 0 001.5 1.5h9a1.5 1.5 0 001.5-1.5V10" stroke="#121212" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+      '</button>' +
+      '<button type="button" class="util-pill icon-only" aria-label="Save">' +
+        '<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 2.5h10a1 1 0 011 1v14l-6-3.5L4 17.5v-14a1 1 0 011-1z" stroke="#121212" stroke-width="1.2" stroke-linejoin="round"/></svg>' +
+      '</button>';
+    artWrap.appendChild(utilRow);
+
+    var hr = document.createElement('hr');
+    hr.className = 'article-divider';
+    artWrap.appendChild(hr);
+
+    var bylineRow = document.createElement('div');
+    bylineRow.className = 'byline-row';
+    var bylineDiv = document.createElement('div');
+    bylineDiv.innerHTML = '<p class="byline-text"><span class="byline-name">By <a href="#">' + ARTICLE_FOR_SLIDE.byline + '</a></span></p>';
+    bylineRow.appendChild(bylineDiv);
+    artWrap.appendChild(bylineRow);
+
+    var dateP = document.createElement('p');
+    dateP.className = 'article-date';
+    dateP.textContent = 'Published ' + ARTICLE_FOR_SLIDE.date;
+    artWrap.appendChild(dateP);
+
+    var bodyDiv = document.createElement('div');
+    bodyDiv.className = 'article-body';
+    for (var p = 0; p < ARTICLE_FOR_SLIDE.paragraphs.length; p++) {
+      var para = document.createElement('p');
+      para.textContent = ARTICLE_FOR_SLIDE.paragraphs[p];
+      bodyDiv.appendChild(para);
+    }
+    artWrap.appendChild(bodyDiv);
+
+    spArticleWrap.appendChild(artWrap);
+    spViewEl.appendChild(spArticleWrap);
+
+    /* ── Floating indicator ── */
+    spFloatBtn = document.createElement('button');
+    spFloatBtn.type = 'button';
+    spFloatBtn.className = 'gc-float-indicator';
+    spFloatBtn.setAttribute('aria-label', 'Open chat \u2014 4 comments from friends');
+    spFloatBtn.appendChild(buildAvatarRow(FRIENDS.slice(0, 3), 3));
+    var countSpan = document.createElement('span');
+    countSpan.className = 'gc-float-indicator-count';
+    countSpan.textContent = '4 comments from friends';
+    spFloatBtn.appendChild(countSpan);
+    on(spFloatBtn, 'click', function () { setSpState('chat'); });
+    spViewEl.appendChild(spFloatBtn);
+
+    /* ── Chat overlay ── */
+    spOverlay = document.createElement('div');
+    spOverlay.className = 'gc-slide-overlay';
+
+    spChatContainer = document.createElement('div');
+    spChatContainer.style.cssText = 'display:none;flex-direction:column;height:100%;';
+
+    /* Top bar: article mini card + close */
+    var chatHeader = document.createElement('div');
+    chatHeader.className = 'gc-chat-header';
+    var miniCard = buildArticleMini(ARTICLE_FOR_SLIDE);
+    var thumb = miniCard.querySelector('.gc-article-mini-thumb');
+    if (thumb) thumb.remove();
+    miniCard.style.cssText = 'border-bottom:none;padding:0;flex:1;min-width:0;';
+    chatHeader.appendChild(miniCard);
+    var chatClose = document.createElement('button');
+    chatClose.type = 'button';
+    chatClose.className = 'gc-topbar-close';
+    chatClose.setAttribute('aria-label', 'Close');
+    chatClose.innerHTML = CLOSE_SVG;
+    on(chatClose, 'click', function () { setSpState('article'); });
+    chatHeader.appendChild(chatClose);
+    spChatContainer.appendChild(chatHeader);
+
+    /* Scrollable message area */
+    var chatScroll = document.createElement('div');
+    chatScroll.className = 'gc-thread-scroll';
+    buildThreadMessages(chatScroll);
+    spChatContainer.appendChild(chatScroll);
+
+    /* Comment input bar (Figma style) */
+    spChatContainer.appendChild(buildChatInputBar());
+
+    spOverlay.appendChild(spChatContainer);
+    spViewEl.appendChild(spOverlay);
+
+    container.appendChild(spViewEl);
+  }
+
+  /* ━━━ Step panels (outside phone) ━━━ */
+
+  function buildStepPanel(title, steps, onStepClick) {
+    var panel = document.createElement('div');
+    panel.id = 'gc-step-panel';
+    panel.setAttribute('aria-label', title);
+
+    var titleEl = document.createElement('p');
+    titleEl.className = 'gc-step-panel-title';
+    titleEl.textContent = title;
+    panel.appendChild(titleEl);
+
+    var btns = [];
+    for (var i = 0; i < steps.length; i++) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'gc-step-btn' + (i === 0 ? ' gc-step-btn--active' : '');
+      btn.innerHTML =
+        '<span class="gc-step-btn-kicker">Step ' + (i + 1) + '</span>' +
+        '<span class="gc-step-btn-title">' + steps[i].title + '</span>' +
+        '<span class="gc-step-btn-caption">' + steps[i].caption + '</span>';
+      on(btn, 'click', (function (idx) {
+        return function () { onStepClick(idx); };
+      })(i));
+      panel.appendChild(btn);
+      btns.push(btn);
+    }
+    return { panel: panel, btns: btns };
+  }
+
+  function mountStepPanel() {
+    removeStepPanel();
+  }
+
+  function removeStepPanel() {
+    if (stepPanelEl && stepPanelEl.parentNode) {
+      stepPanelEl.parentNode.removeChild(stepPanelEl);
+    }
+    stepPanelEl = null;
+    ifStepBtns = [];
+    spStepBtns = [];
+  }
+
+  /* ━━━ Entry switching ━━━ */
+
+  function setEntry(nextEntry) {
+    activeEntry = nextEntry;
+    var keys = Object.keys(panelsById);
+    for (var j = 0; j < keys.length; j++) {
+      var key = keys[j];
+      panelsById[key].classList.toggle('gc-panel--active', key === nextEntry);
+      panelsById[key].setAttribute('aria-hidden', key === nextEntry ? 'false' : 'true');
+    }
+
+    if (nextEntry === 'in-feed') { setIfState('home'); }
+    if (nextEntry === 'in-article-chat') { setSpState('article'); }
+    mountStepPanel(nextEntry);
+
+    window.dispatchEvent(new CustomEvent('groupChatEntryChange', {
+      detail: { entry: nextEntry }
+    }));
+  }
+
+  /* ━━━ Mount / Unmount ━━━ */
+
+  function mount(contentEl, scrollEl) {
+    scrollEl.classList.add('gc-fill');
+    contentEl.classList.add('gc-fill');
+
+    listeners = [];
+    panelsById = {};
+    ifState = 'home';
+    spState = 'article';
+
+    var view = document.createElement('div');
+    view.className = 'gc-view';
+
+    var inFeedPanel = document.createElement('section');
+    inFeedPanel.className = 'gc-panel';
+    inFeedPanel.id = 'gc-panel-in-feed';
+    panelsById['in-feed'] = inFeedPanel;
+    renderInFeedPanel(inFeedPanel);
+    view.appendChild(inFeedPanel);
+
+    var slidePanelPanel = document.createElement('section');
+    slidePanelPanel.className = 'gc-panel';
+    slidePanelPanel.id = 'gc-panel-in-article-chat';
+    panelsById['in-article-chat'] = slidePanelPanel;
+    renderSlidePanelPanel(slidePanelPanel);
+    view.appendChild(slidePanelPanel);
+
+    contentEl.appendChild(view);
+
+    setEntry('in-feed');
+    window.__setGroupChatEntry = setEntry;
+  }
+
+  function unmount() {
+    for (var i = 0; i < listeners.length; i++) {
+      var l = listeners[i];
+      l.el.removeEventListener(l.evt, l.fn);
+    }
+    listeners = [];
+    panelsById = {};
+    ifViewEl = null; ifHomeEl = null; ifExpandedEl = null; ifThreadEl = null; ifPickerEl = null; ifExpScrollEl = null;
+    spViewEl = null; spArticleWrap = null; spOverlay = null; spFloatBtn = null;
+    spChatContainer = null;
+    ifStepBtns = []; spStepBtns = [];
+
+    removeStepPanel();
+
+    if (window.__setGroupChatEntry === setEntry) {
+      delete window.__setGroupChatEntry;
+    }
+  }
+
+  window.__registerPrototype({
+    id: 'group-chat',
+    label: 'Group chat',
     mount: mount,
     unmount: unmount
   });

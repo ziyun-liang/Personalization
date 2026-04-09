@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Personalization Prototype — Sitemap</title>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f8f8f5;
+    color: #333;
+    min-height: 100vh;
+    overflow: auto;
+  }
+
+  /* ── Header ── */
+  .header {
+    padding: 24px 32px 16px;
+    background: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header h1 {
+    font-family: Georgia, serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #121212;
+  }
+  .header p { font-size: 13px; color: #888; margin-top: 4px; }
+  .header-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .btn {
+    padding: 7px 16px;
+    border-radius: 5px;
+    border: 1px solid #d0d0d0;
+    background: #fff;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .btn:hover { background: #f0f0f0; }
+  .btn-primary { background: #326891; color: #fff; border-color: #326891; }
+  .btn-primary:hover { background: #2a5a7c; }
+  .save-msg { font-size: 12px; color: #666; align-self: center; margin-left: 4px; }
+
+  /* ── Legend ── */
+  .legend {
+    display: flex;
+    gap: 16px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #777; }
+  .legend-swatch { width: 14px; height: 8px; border-radius: 2px; }
+
+  /* ── Canvas ── */
+  #canvas {
+    padding: 48px 32px 80px;
+    overflow: visible;
+  }
+  #canvas svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* ── SVG ── */
+  .link {
+    fill: none;
+    stroke: #aaa;
+    stroke-width: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>App Sitemap</h1>
+  <p>Drag any box (except the root) and drop it onto a container to rearrange.</p>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-swatch" style="background:#1a73a7;"></div> Navigation</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#2e7d32;"></div> Feature</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#e65100;"></div> View layer</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#7b1fa2;"></div> Meta</div>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-primary" id="btn-save">Save</button>
+    <button class="btn" id="btn-reset">Reset</button>
+    <span class="save-msg" id="save-msg"></span>
+  </div>
+</div>
+
+<div id="canvas"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     TYPE COLORS
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+  var TYPE_COLORS = {
+    nav:     '#1a73a7',
+    feature: '#2e7d32',
+    layer:   '#e65100',
+    meta:    '#7b1fa2'
+  };
+
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     DATA
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+  var DEFAULT_TREE = {
+    id: 'app-root', label: 'App Opens', type: 'nav', structural: true,
+    children: [
+      {
+        id: 'home-tab', label: 'Home Tab', type: 'nav', structural: true,
+        note: 'Default on launch',
+        children: [
+          { id: 'today-vs-for-you', label: 'Top News vs For You', type: 'feature', protoId: 'today-vs-for-you' },
+          { id: 'morning-briefing', label: 'Morning Briefing', type: 'feature', protoId: 'morning-briefing' },
+          { id: 'reading-modes', label: 'Reading Modes', type: 'feature', protoId: 'reading-modes' },
+          { id: 'because-you-read', label: 'Because You Read', type: 'feature', protoId: 'because-you-read' },
+          { id: 're-engagement', label: 'Re-engagement Loops', type: 'feature', protoId: 're-engagement-loops' }
+        ]
+      },
+      {
+        id: 'you-tab', label: 'You Tab', type: 'nav', structural: true,
+        note: 'Tap "You" in bottom nav',
+        children: [
+          { id: 'reading-streaks', label: 'Reading Streaks', type: 'feature', protoId: 'reading-streaks' },
+          { id: 'friend-activity', label: 'Friend Activity Feed', type: 'feature', protoId: 'friend-activity' },
+          { id: 'group-chat', label: 'Reading Circles', type: 'feature', protoId: 'group-chat' }
+        ]
+      },
+      {
+        id: 'article-view', label: 'Article View', type: 'layer', structural: true,
+        note: 'Tap any article',
+        children: [
+          { id: 'clip-and-discuss', label: 'Share & Discuss', type: 'feature', protoId: 'clip-and-discuss' },
+          { id: 'inline-chat', label: 'Reader Chat', type: 'feature', protoId: 'inline-article-chat' },
+          { id: 'quick-bites', label: 'Article Quick Bites', type: 'feature', protoId: 'article-quick-bites' }
+        ]
+      },
+      {
+        id: 'meta', label: 'Infrastructure', type: 'meta', structural: true,
+        children: [
+          { id: 'journey-engine', label: 'Journey Engine', type: 'meta', protoId: 'journey-engine' }
+        ]
+      }
+    ]
+  };
+
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     STATE
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+  var treeData = loadTree() || deepClone(DEFAULT_TREE);
+
+  function deepClone(o) { return JSON.parse(JSON.stringify(o)); }
+
+  function loadTree() {
+    try {
+      var raw = localStorage.getItem('personalization-sitemap-v3');
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
+  }
+
+  function saveTree() {
+    try {
+      localStorage.setItem('personalization-sitemap-v3', JSON.stringify(treeData));
+      var el = document.getElementById('save-msg');
+      el.textContent = 'Saved';
+      setTimeout(function () { el.textContent = ''; }, 2000);
+    } catch (e) {}
+  }
+
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     TREE OPS
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+  function findNode(root, id) {
+    if (root.id === id) return root;
+    if (!root.children) return null;
+    for (var i = 0; i < root.children.length; i++) {
+      var f = findNode(root.children[i], id);
+      if (f) return f;
+    }
+    return null;
+  }
+
+  function findParent(root, id) {
+    if (!root.children) return null;
+    for (var i = 0; i < root.children.length; i++) {
+      if (root.children[i].id === id) return root;
+      var f = findParent(root.children[i], id);
+      if (f) return f;
+    }
+    return null;
+  }
+
+  function removeNode(root, id) {
+    if (!root.children) return null;
+    for (var i = 0; i < root.children.length; i++) {
+      if (root.children[i].id === id) return root.children.splice(i, 1)[0];
+      var f = removeNode(root.children[i], id);
+      if (f) return f;
+    }
+    return null;
+  }
+
+  function isDescendant(root, ancestorId, childId) {
+    var a = findNode(root, ancestorId);
+    return a ? !!findNode(a, childId) : false;
+  }
+
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     DIMENSIONS
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+  var NODE_W = 130;
+  var NODE_H = 56;
+  var H_GAP = 20;
+  var V_GAP = 48;
+  var CORNER_R = 6;
+  var ACCENT_W = 4;
+
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     SVG TEXT WRAPPING HELPER
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+  /* Break label into lines that fit NODE_W - padding. Returns array of strings. */
+  function wrapLabel(text, maxChars) {
+    if (text.length <= maxChars) return [text];
+    var words = text.split(/\s+/);
+    var lines = [];
+    var cur = '';
+    for (var i = 0; i < words.length; i++) {
+      var test = cur ? cur + ' ' + words[i] : words[i];
+      if (test.length > maxChars && cur) {
+        lines.push(cur);
+        cur = words[i];
+      } else {
+        cur = test;
+      }
+    }
+    if (cur) lines.push(cur);
+    return lines;
+  }
+
+  /* Compute box height given the content */
+  function boxHeight(d) {
+    var label = d.data ? d.data.label : d.label;
+    var protoId = d.data ? d.data.protoId : d.protoId;
+    var note = d.data ? d.data.note : d.note;
+    var lines = wrapLabel(label || '', 18);
+    var h = 16 + lines.length * 14 + 8;
+    if (protoId) h += 12;
+    if (note) h += 12;
+    return Math.max(NODE_H, h);
+  }
+
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     RENDER
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+  var svgEl, gEl, svgW, svgH, offsetX, offsetY;
+  var nodePositions = []; /* { id, x, y, w, h, structural, d3node } */
+
+  function render() {
+    var canvas = document.getElementById('canvas');
+    canvas.innerHTML = '';
+    nodePositions = [];
+
+    /* Build d3 hierarchy */
+    var root = d3.hierarchy(treeData, function (d) { return d.children; });
+
+    /* D3 tree layout */
+    var treeLayout = d3.tree()
+      .nodeSize([NODE_W + H_GAP, NODE_H + V_GAP])
+      .separation(function () { return 1; });
+
+    treeLayout(root);
+
+    /* Compute bounds */
+    var x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+    root.each(function (d) {
+      var bh = boxHeight(d);
+      if (d.x - NODE_W / 2 < x0) x0 = d.x - NODE_W / 2;
+      if (d.x + NODE_W / 2 > x1) x1 = d.x + NODE_W / 2;
+      if (d.y - bh / 2 < y0) y0 = d.y - bh / 2;
+      if (d.y + bh / 2 > y1) y1 = d.y + bh / 2;
+    });
+
+    var pad = 30;
+    svgW = (x1 - x0) + pad * 2;
+    svgH = (y1 - y0) + pad * 2;
+    offsetX = -x0 + pad;
+    offsetY = -y0 + pad;
+
+    /* Create SVG */
+    var svg = d3.select('#canvas')
+      .append('svg')
+      .attr('viewBox', '0 0 ' + svgW + ' ' + svgH);
+
+    svgEl = svg.node();
+
+    var g = svg.append('g')
+      .attr('transform', 'translate(' + offsetX + ',' + offsetY + ')');
+
+    gEl = g.node();
+
+    /* ── Links (elbow connectors) ── */
+    g.selectAll('.link')
+      .data(root.links())
+      .enter()
+      .append('path')
+      .attr('class', 'link')
+      .attr('d', function (d) {
+        var sh = boxHeight(d.source);
+        var th = boxHeight(d.target);
+        var sy = d.source.y + sh / 2;
+        var ty = d.target.y - th / 2;
+        var midY = (sy + ty) / 2;
+        return 'M' + d.source.x + ',' + sy +
+               'V' + midY +
+               'H' + d.target.x +
+               'V' + ty;
+      });
+
+    /* ── Nodes ── */
+    var nodes = g.selectAll('.node')
+      .data(root.descendants())
+      .enter()
+      .append('g')
+      .attr('class', 'node')
+      .each(function (d) {
+        var bh = boxHeight(d);
+        d._bx = d.x - NODE_W / 2;
+        d._by = d.y - bh / 2;
+        d._bh = bh;
+      })
+      .attr('transform', function (d) {
+        return 'translate(' + d._bx + ',' + d._by + ')';
+      });
+
+    /* Background rect */
+    nodes.append('rect')
+      .attr('width', NODE_W)
+      .attr('height', function (d) { return d._bh; })
+      .attr('rx', CORNER_R)
+      .attr('fill', function (d) { return d.data.structural ? '#f5f5f0' : '#fff'; })
+      .attr('stroke', '#333')
+      .attr('stroke-width', 1.5);
+
+    /* Left accent bar */
+    nodes.append('rect')
+      .attr('x', 0)
+      .attr('y', 1)
+      .attr('width', ACCENT_W)
+      .attr('height', function (d) { return d._bh - 2; })
+      .attr('rx', CORNER_R)
+      .attr('fill', function (d) { return TYPE_COLORS[d.data.type] || '#999'; });
+
+    /* Label text */
+    nodes.each(function (d) {
+      var g = d3.select(this);
+      var lines = wrapLabel(d.data.label || '', 18);
+      var protoId = d.data.protoId;
+      var note = d.data.note;
+
+      /* Total text block height */
+      var labelH = lines.length * 14;
+      var extraH = 0;
+      if (protoId) extraH += 12;
+      if (note) extraH += 12;
+      var totalH = labelH + extraH;
+      var startY = (d._bh - totalH) / 2 + 11;
+
+      for (var i = 0; i < lines.length; i++) {
+        g.append('text')
+          .attr('x', NODE_W / 2 + ACCENT_W / 2)
+          .attr('y', startY + i * 14)
+          .attr('text-anchor', 'middle')
+          .attr('font-family', '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif')
+          .attr('font-size', '11px')
+          .attr('font-weight', '600')
+          .attr('fill', '#121212')
+          .text(lines[i]);
+      }
+
+      var extraY = startY + lines.length * 14;
+
+      if (protoId) {
+        g.append('text')
+          .attr('x', NODE_W / 2 + ACCENT_W / 2)
+          .attr('y', extraY + 2)
+          .attr('text-anchor', 'middle')
+          .attr('font-family', '"SF Mono", Menlo, monospace')
+          .attr('font-size', '9px')
+          .attr('fill', '#999')
+          .text(protoId);
+        extraY += 12;
+      }
+
+      if (note) {
+        g.append('text')
+          .attr('x', NODE_W / 2 + ACCENT_W / 2)
+          .attr('y', extraY + 2)
+          .attr('text-anchor', 'middle')
+          .attr('font-family', '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif')
+          .attr('font-size', '9px')
+          .attr('font-style', 'italic')
+          .attr('fill', '#888')
+          .text(note);
+      }
+    });
+
+    /* Invisible hit rect on top (ensures mouse events are captured) */
+    nodes.append('rect')
+      .attr('width', NODE_W)
+      .attr('height', function (d) { return d._bh; })
+      .attr('fill', 'transparent')
+      .attr('cursor', function (d) { return d.data.id === 'app-root' ? 'default' : 'grab'; })
+      .attr('class', 'hit-rect');
+
+    /* Store node positions for hit-testing */
+    root.each(function (d) {
+      nodePositions.push({
+        id: d.data.id,
+        x: d._bx + offsetX,
+        y: d._by + offsetY,
+        w: NODE_W,
+        h: d._bh,
+        structural: !!d.data.structural
+      });
+    });
+
+    /* ── D3 DRAG ── */
+    /*
+     * D3 drag uses the datum's .x/.y (node center from d3.tree layout) as the
+     * subject origin. event.x/event.y track the pointer in the parent <g>'s
+     * coordinate space, starting at (d.x, d.y).
+     *
+     * The node <g> is positioned at top-left: (_bx, _by) = (d.x - NODE_W/2, d.y - bh/2).
+     * So the constant offset from event coords to top-left is:
+     *   ox = NODE_W / 2    (event.x - _bx at start)
+     *   oy = d._bh / 2     (event.y - _by at start)
+     *
+     * Drop targets: any node (structural → becomes child; leaf → inserted next to it
+     * in its parent's children).
+     */
+    var dragState = {
+      sourceId: null,
+      ox: 0,           /* offset from event.x to node top-left */
+      oy: 0,
+      hoverId: null
+    };
+
+    var drag = d3.drag()
+      .filter(function (event, d) {
+        return d.data.id !== 'app-root';
+      })
+      .on('start', function (event, d) {
+        dragState.sourceId = d.data.id;
+        dragState.ox = NODE_W / 2;
+        dragState.oy = d._bh / 2;
+        dragState.hoverId = null;
+        d3.select(this).raise().select('rect').attr('stroke-dasharray', '4,3');
+        d3.select(this).style('opacity', 0.7);
+      })
+      .on('drag', function (event, d) {
+        /* Position node top-left from event center coords */
+        d._bx = event.x - dragState.ox;
+        d._by = event.y - dragState.oy;
+        d3.select(this).attr('transform', 'translate(' + d._bx + ',' + d._by + ')');
+
+        /* Hit-test: center of dragged node in g-space */
+        var cx = event.x;
+        var cy = event.y;
+
+        var hit = null;
+        for (var i = 0; i < nodePositions.length; i++) {
+          var np = nodePositions[i];
+          if (np.id === dragState.sourceId) continue;
+          if (isDescendant(treeData, dragState.sourceId, np.id)) continue;
+          /* Convert nodePositions (SVG-space) back to g-space */
+          var nx = np.x - offsetX;
+          var ny = np.y - offsetY;
+          if (cx >= nx && cx <= nx + np.w && cy >= ny && cy <= ny + np.h) {
+            hit = np.id;
+            break;
+          }
+        }
+
+        /* Highlight the drop target */
+        if (hit !== dragState.hoverId) {
+          gEl.querySelectorAll('.drop-highlight').forEach(function (el) { el.remove(); });
+          dragState.hoverId = hit;
+          if (hit) {
+            var hp = nodePositions.find(function (n) { return n.id === hit; });
+            if (hp) {
+              var hl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+              hl.setAttribute('class', 'drop-highlight');
+              hl.setAttribute('x', hp.x - offsetX - 3);
+              hl.setAttribute('y', hp.y - offsetY - 3);
+              hl.setAttribute('width', hp.w + 6);
+              hl.setAttribute('height', hp.h + 6);
+              hl.setAttribute('rx', CORNER_R + 2);
+              hl.setAttribute('fill', 'none');
+              hl.setAttribute('stroke', '#326891');
+              hl.setAttribute('stroke-width', '3');
+              hl.setAttribute('stroke-dasharray', '6,3');
+              hl.setAttribute('opacity', '0.7');
+              gEl.insertBefore(hl, gEl.firstChild);
+            }
+          }
+        }
+      })
+      .on('end', function (event, d) {
+        gEl.querySelectorAll('.drop-highlight').forEach(function (el) { el.remove(); });
+
+        var targetId = dragState.hoverId;
+        dragState.sourceId = null;
+        dragState.hoverId = null;
+
+        if (targetId) {
+          var currentParent = findParent(treeData, d.data.id);
+          var targetNode = findNode(treeData, targetId);
+          if (!targetNode) { render(); return; }
+
+          if (targetNode.structural) {
+            /* Drop onto a structural node → reparent as its child */
+            if (currentParent && currentParent.id !== targetId) {
+              var moved = removeNode(treeData, d.data.id);
+              if (moved) {
+                if (!targetNode.children) targetNode.children = [];
+                targetNode.children.push(moved);
+              }
+            }
+          } else {
+            /* Drop onto a leaf node → insert next to it (same parent) */
+            var targetParent = findParent(treeData, targetId);
+            if (targetParent) {
+              var sameParent = currentParent && currentParent.id === targetParent.id;
+              var moved = removeNode(treeData, d.data.id);
+              if (moved) {
+                /* Find target's index in its parent and insert after it */
+                var idx = -1;
+                for (var i = 0; i < targetParent.children.length; i++) {
+                  if (targetParent.children[i].id === targetId) { idx = i; break; }
+                }
+                if (idx >= 0) {
+                  targetParent.children.splice(idx + 1, 0, moved);
+                } else {
+                  targetParent.children.push(moved);
+                }
+              }
+            }
+          }
+        }
+
+        render();
+      });
+
+    nodes.call(drag);
+  }
+
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     ACTIONS
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+  document.getElementById('btn-save').addEventListener('click', saveTree);
+  document.getElementById('btn-reset').addEventListener('click', function () {
+    if (confirm('Reset to default?')) {
+      treeData = deepClone(DEFAULT_TREE);
+      localStorage.removeItem('personalization-sitemap-v3');
+      render();
+    }
+  });
+
+  window.addEventListener('resize', function () { render(); });
+
+  /* ── Init ── */
+  render();
+})();
+</script>
+</body>
+</html>

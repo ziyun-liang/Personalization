@@ -1,0 +1,371 @@
+/* Auto-generated from @nyt/tpl + @nyt/components — do not edit manually */
+/* Re-generate: node generate-tpl.js */
+
+/* ── Font Faces (CDN: g1.nyt.com — requires VPN) ── */
+
+@font-face {
+  font-family: 'nyt-magsans';
+  src: url('https://g1.nyt.com/fonts/family/magsans/magsans-normal-500.woff2') format('woff2'),
+       url('https://g1.nyt.com/fonts/family/magsans/magsans-normal-500.woff') format('woff');
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'nyt-magsans';
+  src: url('https://g1.nyt.com/fonts/family/magsans/magsans-normal-700.woff2') format('woff2'),
+       url('https://g1.nyt.com/fonts/family/magsans/magsans-normal-700.woff') format('woff');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'nyt-magslab';
+  src: url('https://g1.nyt.com/fonts/family/magslab/magslab-normal-700.woff2') format('woff2'),
+       url('https://g1.nyt.com/fonts/family/magslab/magslab-normal-700.woff') format('woff');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'nyt-kippenberger';
+  src: url('https://g1.nyt.com/fonts/family/kippenberger/kippenberger-normal-400.woff2') format('woff2'),
+       url('https://g1.nyt.com/fonts/family/kippenberger/kippenberger-normal-400.woff') format('woff');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'nyt-kippenberger';
+  src: url('https://g1.nyt.com/fonts/family/kippenberger/kippenberger-normal-500.woff2') format('woff2'),
+       url('https://g1.nyt.com/fonts/family/kippenberger/kippenberger-normal-500.woff') format('woff');
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'nyt-fact-display';
+  src: url('https://g1.nyt.com/fonts/family/fact-display/fact-display-normal-400.woff2') format('woff2'),
+       url('https://g1.nyt.com/fonts/family/fact-display/fact-display-normal-400.woff') format('woff');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'nyt-fact-display';
+  src: url('https://g1.nyt.com/fonts/family/fact-display/fact-display-normal-700.woff2') format('woff2'),
+       url('https://g1.nyt.com/fonts/family/fact-display/fact-display-normal-700.woff') format('woff');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'nyt-franklin';
+  src: url('https://g1.nyt.com/fonts/family/franklin/franklin-normal-500.woff2') format('woff2'),
+       url('https://g1.nyt.com/fonts/family/franklin/franklin-normal-500.woff') format('woff');
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'nyt-franklin';
+  src: url('https://g1.nyt.com/fonts/family/franklin/franklin-normal-600.woff2') format('woff2'),
+       url('https://g1.nyt.com/fonts/family/franklin/franklin-normal-600.woff') format('woff');
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'nyt-franklin';
+  src: url('https://g1.nyt.com/fonts/family/franklin/franklin-normal-700.woff2') format('woff2'),
+       url('https://g1.nyt.com/fonts/family/franklin/franklin-normal-700.woff') format('woff');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'nyt-franklin';
+  src: url('https://g1.nyt.com/fonts/family/franklin/franklin-italic-500.woff2') format('woff2'),
+       url('https://g1.nyt.com/fonts/family/franklin/franklin-italic-500.woff') format('woff');
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'nyt-cheltenham';
+  src: url('https://g1.nyt.com/fonts/family/cheltenham/cheltenham-normal-200.woff2') format('woff2'),
+       url('https://g1.nyt.com/fonts/family/cheltenham/cheltenham-normal-200.woff') format('woff');
+  font-style: normal;
+  font-weight: 200;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'nyt-cheltenham';
+  src: url('https://g1.nyt.com/fonts/family/cheltenham/cheltenham-normal-300.woff2') format('woff2'),
+       url('https://g1.nyt.com/fonts/family/cheltenham/cheltenham-normal-300.woff') format('woff');
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'nyt-cheltenham';
+  src: url('https://g1.nyt.com/fonts/family/cheltenham/cheltenham-italic-300.woff2') format('woff2'),
+       url('https://g1.nyt.com/fonts/family/cheltenham/cheltenham-italic-300.woff') format('woff');
+  font-style: italic;
+  font-weight: 300;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'nyt-cheltenham';
+  src: url('https://g1.nyt.com/fonts/family/cheltenham/cheltenham-normal-400.woff2') format('woff2'),
+       url('https://g1.nyt.com/fonts/family/cheltenham/cheltenham-normal-400.woff') format('woff');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'nyt-cheltenham';
+  src: url('https://g1.nyt.com/fonts/family/cheltenham/cheltenham-normal-500.woff2') format('woff2'),
+       url('https://g1.nyt.com/fonts/family/cheltenham/cheltenham-normal-500.woff') format('woff');
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'nyt-cheltenham';
+  src: url('https://g1.nyt.com/fonts/family/cheltenham/cheltenham-italic-500.woff2') format('woff2'),
+       url('https://g1.nyt.com/fonts/family/cheltenham/cheltenham-italic-500.woff') format('woff');
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'nyt-cheltenham';
+  src: url('https://g1.nyt.com/fonts/family/cheltenham/cheltenham-normal-700.woff2') format('woff2'),
+       url('https://g1.nyt.com/fonts/family/cheltenham/cheltenham-normal-700.woff') format('woff');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'nyt-cheltenham';
+  src: url('https://g1.nyt.com/fonts/family/cheltenham/cheltenham-italic-700.woff2') format('woff2'),
+       url('https://g1.nyt.com/fonts/family/cheltenham/cheltenham-italic-700.woff') format('woff');
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'nyt-cheltenham-cond';
+  src: url('https://g1.nyt.com/fonts/family/cheltenham-cond/cheltenham-cond-normal-700.woff2') format('woff2'),
+       url('https://g1.nyt.com/fonts/family/cheltenham-cond/cheltenham-cond-normal-700.woff') format('woff');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'nyt-cheltenham-text-cond';
+  src: url('https://g1.nyt.com/fonts/family/cheltenham-text-cond/cheltenham-text-cond-normal-700.woff2') format('woff2'),
+       url('https://g1.nyt.com/fonts/family/cheltenham-text-cond/cheltenham-text-cond-normal-700.woff') format('woff');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'nyt-imperial';
+  src: url('https://g1.nyt.com/fonts/family/imperial/imperial-normal-400.woff2') format('woff2'),
+       url('https://g1.nyt.com/fonts/family/imperial/imperial-normal-400.woff') format('woff');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'nyt-imperial';
+  src: url('https://g1.nyt.com/fonts/family/imperial/imperial-normal-700.woff2') format('woff2'),
+       url('https://g1.nyt.com/fonts/family/imperial/imperial-normal-700.woff') format('woff');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'nyt-imperial';
+  src: url('https://g1.nyt.com/fonts/family/imperial/imperial-italic-400.woff2') format('woff2'),
+       url('https://g1.nyt.com/fonts/family/imperial/imperial-italic-400.woff') format('woff');
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'nyt-karnak';
+  src: url('https://g1.nyt.com/fonts/family/karnak/karnak-normal-400.woff2') format('woff2'),
+       url('https://g1.nyt.com/fonts/family/karnak/karnak-normal-400.woff') format('woff');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'nyt-karnak';
+  src: url('https://g1.nyt.com/fonts/family/karnak/karnak-normal-700.woff2') format('woff2'),
+       url('https://g1.nyt.com/fonts/family/karnak/karnak-normal-700.woff') format('woff');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+
+:root {
+
+  /* ── Font Family Stacks ── */
+  --font-franklin: nyt-franklin, helvetica, arial, sans-serif;
+  --font-cheltenham: nyt-cheltenham, cheltenham-fallback-georgia, cheltenham-fallback-noto, georgia, 'times new roman', times, serif;
+  --font-imperial: nyt-imperial, georgia, 'times new roman', times, serif;
+  --font-karnak: nyt-karnak, georgia, 'times new roman', times, serif;
+  --font-opinion: nyt-cheltenham-cond, nyt-cheltenham, cheltenham-fallback-georgia, cheltenham-fallback-noto, georgia, 'times new roman', times, serif;
+  --font-magsans: nyt-magsans, helvetica, arial, sans-serif;
+  --font-mono: nyt-ibm-plex, Courier, 'Courier New', monospace;
+
+  /* ── Color Tokens (Light Theme) ── */
+
+  /* content */
+  --tpl-content-primary: #121212;
+  --tpl-content-primary-dim: #363636;
+  --tpl-content-secondary: #5A5A5A;
+  --tpl-content-secondary-dim: #727272;
+  --tpl-content-accent: #346EB7;
+  --tpl-content-accent-dim: #326891;
+  --tpl-content-positive: #267C30;
+  --tpl-content-negative: #A90111;
+  --tpl-content-breaking: #D0021B;
+  --tpl-content-placeholder: #8B8B8B;
+
+  /* stroke */
+  --tpl-stroke-primary: #121212;
+  --tpl-stroke-secondary: #979797;
+  --tpl-stroke-tertiary: #DFDFDF;
+
+  /* background */
+  --tpl-background-primary: #FFFFFF;
+  --tpl-background-secondary: #F8F8F8;
+  --tpl-background-tertiary: #EBEBEB;
+  --tpl-background-highlight: #FEFAD1;
+  --tpl-background-scrim: rgba(0, 0, 7, 0.6);
+
+  /* ── Spacing Scale (8px base) ── */
+  --tpl-space-0_5: 0.25rem;
+  --tpl-space-1: 0.5rem;
+  --tpl-space-1_5: 0.75rem;
+  --tpl-space-2: 1rem;
+  --tpl-space-2_5: 1.25rem;
+  --tpl-space-3: 1.5rem;
+  --tpl-space-4: 2rem;
+  --tpl-space-5: 2.5rem;
+  --tpl-space-6: 3rem;
+  --tpl-space-7: 3.5rem;
+  --tpl-space-8: 4rem;
+  --tpl-space-9: 4.5rem;
+  --tpl-space-10: 5rem;
+
+  /* ── Typography Presets ── */
+  /* Usage: font: var(--tpl-type-text-14); */
+  --tpl-type-text-12: 500 0.75rem/1.3 nyt-franklin, helvetica, arial, sans-serif;
+  --tpl-type-text-14: 500 0.875rem/1.3 nyt-franklin, helvetica, arial, sans-serif;
+  --tpl-type-text-16: 500 1rem/1.3 nyt-franklin, helvetica, arial, sans-serif;
+  --tpl-type-text-18: 500 1.125rem/1.3 nyt-franklin, helvetica, arial, sans-serif;
+  --tpl-type-text-20: 500 1.25rem/1.2 nyt-franklin, helvetica, arial, sans-serif;
+  --tpl-type-title-12: 600 0.75rem/1.3 nyt-franklin, helvetica, arial, sans-serif;
+  --tpl-type-title-14: 600 0.875rem/1.3 nyt-franklin, helvetica, arial, sans-serif;
+  --tpl-type-title-16: 600 1rem/1.3 nyt-franklin, helvetica, arial, sans-serif;
+  --tpl-type-title-18: 600 1.125rem/1.3 nyt-franklin, helvetica, arial, sans-serif;
+  --tpl-type-title-20: 600 1.25rem/1.2 nyt-franklin, helvetica, arial, sans-serif;
+  --tpl-type-title-22: 600 1.375rem/1.2 nyt-franklin, helvetica, arial, sans-serif;
+  --tpl-type-title-24: 600 1.5rem/1.2 nyt-franklin, helvetica, arial, sans-serif;
+  --tpl-type-title-28: 600 1.75rem/1.2 nyt-franklin, helvetica, arial, sans-serif;
+  --tpl-type-title-32: 600 2rem/1.2 nyt-franklin, helvetica, arial, sans-serif;
+  --tpl-type-title-48: 600 3rem/1.1 nyt-franklin, helvetica, arial, sans-serif;
+  --tpl-type-title-56: 600 3.5rem/1 nyt-franklin, helvetica, arial, sans-serif;
+  --tpl-type-titlekarnak-16: 700 1rem/1.15 nyt-karnak, georgia, 'times new roman', times, serif;
+  --tpl-type-titlekarnak-18: 700 1.125rem/1.15 nyt-karnak, georgia, 'times new roman', times, serif;
+  --tpl-type-label-regular: 500 0.6875rem/1.25 nyt-franklin, helvetica, arial, sans-serif;
+  --tpl-type-label-regular-letter-spacing: 0.1em;
+  --tpl-type-label-regular-text-transform: uppercase;
+  --tpl-type-label-emphasis: 800 0.6875rem/1.25 nyt-franklin, helvetica, arial, sans-serif;
+  --tpl-type-label-emphasis-letter-spacing: 0.1em;
+  --tpl-type-label-emphasis-text-transform: uppercase;
+  --tpl-type-headline-16: 500 1rem/1.2 nyt-cheltenham, cheltenham-fallback-georgia, cheltenham-fallback-noto, georgia, 'times new roman', times, serif;
+  --tpl-type-headline-16-letter-spacing: 0.01em;
+  --tpl-type-headline-18: 400 1.125rem/1.2 nyt-cheltenham, cheltenham-fallback-georgia, cheltenham-fallback-noto, georgia, 'times new roman', times, serif;
+  --tpl-type-headline-18-letter-spacing: 0.01em;
+  --tpl-type-headline-24: 400 1.5rem/1.15 nyt-cheltenham, cheltenham-fallback-georgia, cheltenham-fallback-noto, georgia, 'times new roman', times, serif;
+  --tpl-type-headline-28: 400 1.75rem/1.15 nyt-cheltenham, cheltenham-fallback-georgia, cheltenham-fallback-noto, georgia, 'times new roman', times, serif;
+  --tpl-type-headlinenews-16: 700 1rem/1.2 nyt-cheltenham, cheltenham-fallback-georgia, cheltenham-fallback-noto, georgia, 'times new roman', times, serif;
+  --tpl-type-headlinenews-16-letter-spacing: 0.01em;
+  --tpl-type-headlinenews-18: 700 1.125rem/1.2 nyt-cheltenham, cheltenham-fallback-georgia, cheltenham-fallback-noto, georgia, 'times new roman', times, serif;
+  --tpl-type-headlinenews-18-letter-spacing: 0.01em;
+  --tpl-type-headlinenews-20: 700 1.25rem/1.15 nyt-cheltenham, cheltenham-fallback-georgia, cheltenham-fallback-noto, georgia, 'times new roman', times, serif;
+  --tpl-type-headlinenews-20-letter-spacing: 0.01em;
+  --tpl-type-headlinenews-22: 700 1.375rem/1.15 nyt-cheltenham, cheltenham-fallback-georgia, cheltenham-fallback-noto, georgia, 'times new roman', times, serif;
+  --tpl-type-headlinenews-28: 700 1.75rem/1.15 nyt-cheltenham, cheltenham-fallback-georgia, cheltenham-fallback-noto, georgia, 'times new roman', times, serif;
+  --tpl-type-headlinenews-32: 700 2rem/1.15 nyt-cheltenham, cheltenham-fallback-georgia, cheltenham-fallback-noto, georgia, 'times new roman', times, serif;
+  --tpl-type-headlinenews-36: 700 2.25rem/1.15 nyt-cheltenham, cheltenham-fallback-georgia, cheltenham-fallback-noto, georgia, 'times new roman', times, serif;
+  --tpl-type-headlinenews-40: 700 2.5rem/1.1 nyt-cheltenham, cheltenham-fallback-georgia, cheltenham-fallback-noto, georgia, 'times new roman', times, serif;
+  --tpl-type-headlinenews-48: 700 3rem/1.1 nyt-cheltenham, cheltenham-fallback-georgia, cheltenham-fallback-noto, georgia, 'times new roman', times, serif;
+  --tpl-type-headlinefeature-24: 300 1.5rem/1.15 nyt-cheltenham, cheltenham-fallback-georgia, cheltenham-fallback-noto, georgia, 'times new roman', times, serif;
+  --tpl-type-headlinefeature-28: 200 1.75rem/1.15 nyt-cheltenham, cheltenham-fallback-georgia, cheltenham-fallback-noto, georgia, 'times new roman', times, serif;
+  --tpl-type-headlinefeature-32: 200 2rem/1.15 nyt-cheltenham, cheltenham-fallback-georgia, cheltenham-fallback-noto, georgia, 'times new roman', times, serif;
+  --tpl-type-headlinefeature-48: 200 3rem/1.1 nyt-cheltenham, cheltenham-fallback-georgia, cheltenham-fallback-noto, georgia, 'times new roman', times, serif;
+  --tpl-type-headlinefeature-56: 200 3.5rem/1 nyt-cheltenham, cheltenham-fallback-georgia, cheltenham-fallback-noto, georgia, 'times new roman', times, serif;
+  --tpl-type-headlineopinion-18: 700 1.125rem/1.15 nyt-cheltenham-text-cond, georgia, 'times new roman', times, serif;
+  --tpl-type-headlineopinion-18-letter-spacing: 0.0025em;
+  --tpl-type-headlineopinion-20: 700 1.25rem/1.15 nyt-cheltenham-text-cond, georgia, 'times new roman', times, serif;
+  --tpl-type-headlineopinion-20-letter-spacing: 0.0025em;
+  --tpl-type-headlineopinion-22: 700 1.375rem/1.15 nyt-cheltenham-text-cond, georgia, 'times new roman', times, serif;
+  --tpl-type-headlineopinion-22-letter-spacing: 0.0025em;
+  --tpl-type-headlineopinion-24: 700 1.5rem/1.15 nyt-cheltenham-text-cond, georgia, 'times new roman', times, serif;
+  --tpl-type-headlineopinion-24-letter-spacing: 0.0025em;
+  --tpl-type-headlineopinion-36: 700 2.25rem/1.15 nyt-cheltenham-text-cond, georgia, 'times new roman', times, serif;
+  --tpl-type-headlineopinion-36-letter-spacing: 0.0025em;
+  --tpl-type-headlineopinion-56: 700 3.5rem/1.1 nyt-cheltenham-cond, georgia, 'times new roman', times, serif;
+  --tpl-type-body-14: 400 0.875rem/1.39 nyt-imperial, georgia, 'times new roman', times, serif;
+  --tpl-type-body-16: 400 1rem/1.39 nyt-imperial, georgia, 'times new roman', times, serif;
+  --tpl-type-body-18: 400 1.125rem/1.39 nyt-imperial, georgia, 'times new roman', times, serif;
+  --tpl-type-body-20: 400 1.25rem/1.5 nyt-imperial, georgia, 'times new roman', times, serif;
+
+  /* ── Border Widths ── */
+  --tpl-border-width-1: 0.0625rem;
+  --tpl-border-width-1_5: 0.09375rem;
+  --tpl-border-width-2: 0.125rem;
+
+  /* ── Backward-Compatible Aliases ── */
+  /* Maps old template variable names to new TPL tokens */
+  --bg: #f6f4ef;
+  --ink: var(--tpl-content-primary);
+  --muted: var(--tpl-content-secondary);
+  --line: var(--tpl-stroke-tertiary);
+  --inactive: #d0cec8;
+  --card-bg: var(--tpl-background-primary);
+}
